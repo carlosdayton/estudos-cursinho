@@ -10,7 +10,6 @@ import { Plus, GraduationCap, LayoutGrid, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PomodoroTimer from './PomodoroTimer';
 import RevisionPanel from './RevisionPanel';
-import FocusModeButton from './FocusModeButton';
 import { getDaysUntilEnem, ENEM_2026_DATE } from '../utils/studyLogic';
 
 // 15.2 — Lazy loading para SimuladosTracker e StatsPanel
@@ -291,15 +290,7 @@ export default function Dashboard() {
           </motion.div>
         </header>
 
-        {/* FocusModeButton — fixo no canto inferior direito, acima do footer */}
-        <div style={{
-          position: 'fixed',
-          bottom: '110px',
-          right: '2rem',
-          zIndex: 1000,
-        }}>
-          <FocusModeButton subjects={subjects} />
-        </div>
+        {/* FocusModeButton movido para o footer em App.tsx */}
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', alignItems: 'stretch', padding: '1rem 0' }}>
           <PomodoroTimer />

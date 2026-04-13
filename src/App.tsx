@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ToastProvider } from './context/ToastContext';
 import { FocusModeProvider, useFocusMode, resolveActiveSubject } from './context/FocusModeContext';
 import FocusModeOverlay from './components/FocusModeOverlay';
+import FocusModeButton from './components/FocusModeButton';
 import { useSubjects } from './hooks/useSubjects';
 
 function AppInner() {
@@ -24,7 +25,7 @@ function AppInner() {
         )}
       </AnimatePresence>
 
-      {/* GLOBAL FLOAT BAR - REPOSITIONED TO FOOTER */}
+      {/* GLOBAL FLOAT BAR - FOOTER */}
       {!isFocusMode && (
         <footer
           style={{
@@ -36,32 +37,41 @@ function AppInner() {
             backdropFilter: 'blur(24px)',
             borderTop: '1px solid rgba(255, 255, 255, 0.2)',
             zIndex: 9999,
-            padding: '60px 0'
+            padding: '16px 2rem',
           }}
         >
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex items-center justify-center gap-10"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2.5rem', position: 'relative' }}
           >
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                backgroundColor: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#020617',
-                borderRadius: '14px',
-                boxShadow: '0 10px 20px rgba(255,255,255,0.2)'
-              }}
-            >
-              <Sparkles size={24} fill="currentColor" />
+            {/* Sistema de Elite */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  backgroundColor: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#020617',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 20px rgba(255,255,255,0.2)',
+                  flexShrink: 0,
+                }}
+              >
+                <Sparkles size={20} fill="currentColor" />
+              </div>
+              <div className="flex flex-col">
+                <h5 className="text-[10px] font-black text-white uppercase tracking-[0.4em] mb-1 font-lexend">Sistema de Elite</h5>
+                <p className="text-[13px] font-black text-white tracking-[0.05em] uppercase leading-none font-lexend">Revisão Automática Ativada</p>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <h5 className="text-[10px] font-black text-white uppercase tracking-[0.4em] mb-1 font-lexend">Sistema de Elite</h5>
-              <p className="text-[14px] font-black text-white tracking-[0.05em] uppercase leading-none font-lexend">Revisão Automática Ativada</p>
+
+            {/* Botão Modo Foco — canto direito do footer */}
+            <div style={{ position: 'absolute', right: 0 }}>
+              <FocusModeButton subjects={subjects} />
             </div>
           </motion.div>
         </footer>
