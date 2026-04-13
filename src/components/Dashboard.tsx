@@ -288,9 +288,18 @@ export default function Dashboard() {
               <Plus size={24} strokeWidth={3} />
               Nova Matéria
             </button>
-            <FocusModeButton subjects={subjects} />
           </motion.div>
         </header>
+
+        {/* FocusModeButton — fixo no canto inferior direito, acima do footer */}
+        <div style={{
+          position: 'fixed',
+          bottom: '110px',
+          right: '2rem',
+          zIndex: 1000,
+        }}>
+          <FocusModeButton subjects={subjects} />
+        </div>
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', alignItems: 'stretch', padding: '1rem 0' }}>
           <PomodoroTimer />
