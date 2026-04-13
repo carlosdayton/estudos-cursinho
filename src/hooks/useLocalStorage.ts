@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Hook personalizado para gerenciar estado sincronizado com o localStorage do navegador.
+ * Inclui debounce de 300ms para evitar escritas excessivas e tratamento de erros robusto.
  * @param key A chave sob a qual o valor será armazenado no localStorage.
  * @param initialValue O valor inicial caso não haja nada armazenado.
  */
@@ -9,28 +10,46 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   // Inicializa o estado. A função de inicialização lê do localStorage apenas uma vez na montagem.
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
-      // Tenta buscar o item do localStorage pela chave fornecida
       const item = window.localStorage.getItem(key);
-      // Se o item existir, converte de JSON para objeto; se não, usa o valor inicial
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      // Caso ocorra algum erro na leitura (ex: JSON corrompido), exibe o erro e usa o valor inicial
-      console.error("Erro ao ler do localStorage:", error);
+      // Req 16.2: JSON corrompido — usar initialValue como fallback e logar no console
+      console.error(`[useLocalStorage] Falha ao ler/parsear dados da chave "${key}". Usando valor inicial como fallback.`, error);
       return initialValue;
     }
   });
 
-  // useEffect que dispara sempre que a 'key' ou o 'storedValue' mudarem
-  useEffect(() => {
-    try {
-      // Converte o valor atual para string JSON e salva no localStorage
-      window.localStorage.setItem(key, JSON.stringify(storedValue));
-    } catch (error) {
-      // Caso ocorra erro na gravação (ex: armazenamento cheio)
-      console.error("Erro ao salvar no localStorage:", error);
-    }
-  }, [key, storedValue]); // Dependências do efeito
+  // Ref para armazenar o timer de debounce (Req 9.1, 9.2, 9.3)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Retorna o valor atual e a função para atualizá-lo, como um useState padrão
+  useEffect(() => {
+    // Req 9.2: Cancelar timer anterior antes de criar um novo
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+    }
+
+    // Req 9.1: Atrasar a persistência em 300ms após a última mudança
+    timerRef.current = setTimeout(() => {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(storedValue));
+      } catch (error) {
+        // Req 9.4 / 16.1: Capturar QuotaExceededError, manter estado em memória
+        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+          console.error(`[useLocalStorage] Armazenamento cheio (QuotaExceededError) ao salvar a chave "${key}". O estado será mantido apenas em memória.`, error);
+          // Toast será integrado na tarefa 10 (ToastContext)
+        } else {
+          console.error(`[useLocalStorage] Erro ao salvar na chave "${key}":`, error);
+        }
+      }
+    }, 300);
+
+    // Req 9.3: Limpar timer pendente no cleanup para evitar memory leaks
+    return () => {
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [key, storedValue]);
+
   return [storedValue, setStoredValue] as const;
 }

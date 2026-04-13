@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import type { Subject, Topic } from '../utils/studyLogic';
 import { calculateReviewDate, getProgress } from '../utils/studyLogic';
 import TopicItem from './TopicItem';
-import { Plus, GraduationCap, ChevronRight, Settings } from 'lucide-react';
+import { Plus, GraduationCap, ChevronDown, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToastContext } from '../context/ToastContext';
 
 interface Props {
   subject: Subject;
@@ -11,9 +12,11 @@ interface Props {
   onDeleteSubject: () => void;
 }
 
-export default function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
+function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
   const [newTopicName, setNewTopicName] = useState('');
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => window.innerWidth >= 768);
+  const [hoverDelete, setHoverDelete] = useState(false);
+  const { showToast } = useToastContext();
 
   const addTopic = () => {
     if (!newTopicName.trim()) return;
@@ -21,145 +24,226 @@ export default function SubjectCard({ subject, onUpdateSubject, onDeleteSubject 
       id: Math.random().toString(36).substr(2, 9),
       name: newTopicName,
       isStudied: false,
-      isExercisesDone: false
+      isExercisesDone: false,
     };
-    onUpdateSubject({
-      ...subject,
-      topics: [...subject.topics, newTopic]
-    });
+    onUpdateSubject({ ...subject, topics: [...subject.topics, newTopic] });
     setNewTopicName('');
   };
 
   const updateTopic = (topicId: string, updates: Partial<Topic>) => {
     const updatedTopics = subject.topics.map(t => {
-      if (t.id === topicId) {
-        const updated = { ...t, ...updates };
-        if (updated.isStudied && updated.isExercisesDone && (!t.isStudied || !t.isExercisesDone)) {
-          updated.completedAt = new Date().toISOString();
-          updated.reviewDate = calculateReviewDate(updated.completedAt);
-        }
-        return updated;
+      if (t.id !== topicId) return t;
+      const updated = { ...t, ...updates };
+      if (updated.isStudied && updated.isExercisesDone && (!t.isStudied || !t.isExercisesDone)) {
+        updated.completedAt = new Date().toISOString();
+        updated.reviewDate = calculateReviewDate(updated.completedAt);
+        showToast('Tópico concluído! Revisão agendada.', 'success');
       }
-      return t;
+      return updated;
     });
     onUpdateSubject({ ...subject, topics: updatedTopics });
   };
 
   const removeTopic = (topicId: string) => {
-    onUpdateSubject({
-      ...subject,
-      topics: subject.topics.filter(t => t.id !== topicId)
-    });
+    onUpdateSubject({ ...subject, topics: subject.topics.filter(t => t.id !== topicId) });
   };
 
   const progress = getProgress(subject);
 
   return (
-    <motion.div 
+    <motion.div
       layout
-      className="glass-card flex flex-col group overflow-visible pt-16"
-      style={{ position: 'relative' }}
+      style={{
+        background: 'rgba(15,23,42,0.6)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: `1px solid ${subject.color}33`,
+        borderRadius: '28px',
+        overflow: 'hidden',
+        position: 'relative',
+        boxShadow: `0 20px 60px -15px rgba(0,0,0,0.6), 0 0 0 1px ${subject.color}11`,
+      }}
     >
-      {/* Floating Icon XXL */}
-      <div 
-        className="absolute left-1/2 -top-14 -translate-x-1/2 z-20 group-hover:-translate-y-3 transition-transform duration-700"
-      >
-        <div className="relative">
-          <div 
-            className="absolute -inset-8 blur-3xl opacity-50 rounded-full"
-            style={{ backgroundColor: subject.color }}
+      {/* Color accent top bar */}
+      <div style={{
+        height: '3px',
+        background: `linear-gradient(90deg, transparent, ${subject.color}, transparent)`,
+        opacity: 0.8,
+      }} />
+
+      {/* Header */}
+      <div style={{ padding: '1.75rem 1.75rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+        {/* Icon + name row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '16px', flexShrink: 0,
+            background: `${subject.color}18`,
+            border: `1.5px solid ${subject.color}44`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: subject.color,
+            boxShadow: `0 0 20px ${subject.color}22`,
+          }}>
+            <GraduationCap size={26} strokeWidth={2} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{
+              fontSize: '1.25rem', fontWeight: 900, color: '#fff',
+              letterSpacing: '-0.02em', lineHeight: 1.2,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {subject.name}
+            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '3px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                {subject.topics.length} tópico{subject.topics.length !== 1 ? 's' : ''}
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '10px' }}>·</span>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: subject.color, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                {progress}% feito
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+            <button
+              onClick={onDeleteSubject}
+              onMouseEnter={() => setHoverDelete(true)}
+              onMouseLeave={() => setHoverDelete(false)}
+              aria-label={`Excluir matéria ${subject.name}`}
+              style={{
+                width: '36px', height: '36px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: hoverDelete ? 'rgba(248,113,113,0.15)' : 'rgba(255,255,255,0.05)',
+                color: hoverDelete ? '#f87171' : 'rgba(255,255,255,0.3)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Trash2 size={15} />
+            </button>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              aria-label={isExpanded ? `Recolher ${subject.name}` : `Expandir ${subject.name}`}
+              aria-expanded={isExpanded}
+              style={{
+                width: '36px', height: '36px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: isExpanded ? `${subject.color}22` : 'rgba(255,255,255,0.05)',
+                color: isExpanded ? subject.color : 'rgba(255,255,255,0.4)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <ChevronDown size={18} style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 1, ease: 'circOut' }}
+            style={{
+              height: '100%', borderRadius: '99px',
+              background: progress === 100
+                ? `linear-gradient(90deg, ${subject.color}, #34d399)`
+                : subject.color,
+              boxShadow: `0 0 12px ${subject.color}88`,
+            }}
           />
-          <div 
-            className="w-28 h-28 rounded-[40px] flex items-center justify-center relative z-20 bg-slate-900 border-[3px] shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-            style={{ borderColor: subject.color, color: subject.color }}
-          >
-            <GraduationCap size={64} strokeWidth={2} />
-          </div>
         </div>
       </div>
 
-      <div className="flex flex-col mb-10 gap-8">
-        <div className="text-center w-full px-6">
-          <h3 className="text-6xl font-black text-white leading-tight mb-10 tracking-tighter drop-shadow-2xl">
-            {subject.name}
-          </h3>
-          <div className="flex items-center justify-center gap-12 w-full">
-            <span className="text-[14px] text-white/60 font-black uppercase tracking-[0.4em]">{subject.topics.length} TÓPICOS</span>
-            <div className="w-3 h-3 rounded-full bg-white/10 shadow-inner" />
-            <span className="text-[14px] font-black uppercase tracking-[0.4em] px-8 py-3 rounded-full bg-white/5 border border-white/5 shadow-xl" style={{ color: subject.color }}>{progress}% FEITO</span>
-          </div>
-        </div>
-        
-        <div className="flex flex-row items-center justify-center gap-8">
-          <button 
-            onClick={onDeleteSubject}
-            className="action-btn hover:text-red-400 transition-all shadow-xl"
-            style={{ width: '48px', height: '48px' }}
-            title="Excluir Matéria"
-          >
-            <Settings size={20} />
-          </button>
-          <button 
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`action-btn transition-all shadow-xl ${isExpanded ? 'text-indigo-400 border-indigo-500/30 bg-indigo-500/10' : ''}`}
-            style={{ width: '48px', height: '48px' }}
-          >
-            <ChevronRight size={24} style={{ transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }} />
-          </button>
-        </div>
-      </div>
-
-      <div className="relative h-4 bg-slate-800/50 rounded-full mb-8 overflow-hidden border-2 border-white/5 shadow-inner mx-4">
-        <motion.div 
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          className="absolute h-full left-0 top-0"
-          style={{ 
-            backgroundColor: subject.color,
-            boxShadow: `0 0 40px ${subject.color}cc`
-          }}
-        />
-      </div>
-
-      <AnimatePresence>
+      {/* Expandable content */}
+      <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
+            key="content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
           >
-            <div className="flex gap-4 px-4 mb-16">
-              <input 
-                type="text" 
+            {/* Add topic input */}
+            <div style={{ padding: '0 1.75rem 1.25rem', display: 'flex', gap: '0.75rem' }}>
+              <label htmlFor={`new-topic-${subject.id}`} style={{
+                position: 'absolute', width: '1px', height: '1px',
+                overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap',
+              }}>
+                Novo tópico para {subject.name}
+              </label>
+              <input
+                id={`new-topic-${subject.id}`}
+                type="text"
                 value={newTopicName}
-                onChange={(e) => setNewTopicName(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addTopic()}
-                placeholder="O que vamos aprender agora?"
-                className="input flex-1 py-4 text-xl px-8"
+                onChange={e => setNewTopicName(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && addTopic()}
+                placeholder="Adicionar tópico..."
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '12px', padding: '0.625rem 1rem',
+                  color: '#fff', fontSize: '0.9rem', fontFamily: 'Lexend, sans-serif',
+                  outline: 'none', transition: 'border-color 0.2s',
+                }}
+                onFocus={e => (e.target.style.borderColor = `${subject.color}66`)}
+                onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.08)')}
               />
-              <button 
-                onClick={addTopic} 
-                className="btn btn-primary px-7 aspect-square flex items-center justify-center shadow-lg"
+              <button
+                onClick={addTopic}
+                aria-label={`Adicionar tópico a ${subject.name}`}
+                style={{
+                  width: '40px', height: '40px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  background: subject.color, color: '#020617',
+                  boxShadow: `0 4px 16px ${subject.color}55`,
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <Plus size={28} strokeWidth={3} />
+                <Plus size={20} strokeWidth={3} />
               </button>
             </div>
 
-            <div className="flex flex-col gap-6 max-h-[800px] overflow-y-auto pr-4 custom-scroll pb-12">
+            {/* Topics list */}
+            <div style={{
+              padding: '0 1.75rem 1.75rem',
+              display: 'flex', flexDirection: 'column', gap: '0.75rem',
+              maxHeight: '600px', overflowY: 'auto',
+            }}>
               {subject.topics.map(topic => (
-                <TopicItem 
+                <TopicItem
                   key={topic.id}
                   topic={topic}
                   onToggleStudied={() => updateTopic(topic.id, { isStudied: !topic.isStudied })}
                   onToggleExercises={() => updateTopic(topic.id, { isExercisesDone: !topic.isExercisesDone })}
                   onRemove={() => removeTopic(topic.id)}
-                  onUpdateNotes={(notes) => updateTopic(topic.id, { notes })}
+                  onUpdateNotes={notes => updateTopic(topic.id, { notes })}
                 />
               ))}
+
               {subject.topics.length === 0 && (
-                <div className="py-32 text-center bg-white/[0.01] rounded-[64px] border-4 border-white/[0.04] border-dashed">
-                  <p className="text-[16px] text-slate-700 font-black uppercase tracking-[0.4em]">Inicie sua jornada épica</p>
+                <div style={{
+                  padding: '2.5rem 1rem', textAlign: 'center',
+                  border: `1px dashed ${subject.color}22`,
+                  borderRadius: '16px',
+                  background: `${subject.color}05`,
+                }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '12px', margin: '0 auto 0.75rem',
+                    background: `${subject.color}15`, border: `1px solid ${subject.color}30`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: subject.color,
+                  }}>
+                    <Plus size={18} />
+                  </div>
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>
+                    Nenhum tópico ainda
+                  </p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)' }}>
+                    Digite acima e pressione Enter para adicionar
+                  </p>
                 </div>
               )}
             </div>
@@ -169,3 +253,5 @@ export default function SubjectCard({ subject, onUpdateSubject, onDeleteSubject 
     </motion.div>
   );
 }
+
+export default memo(SubjectCard);

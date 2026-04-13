@@ -210,6 +210,40 @@ button {
   margin-top: 3rem;
 }
 
+/* 15.5 — Grid responsiva de SubjectCards */
+.subjects-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-grid);
+  margin-top: 3rem;
+}
+
+.subjects-grid .col-span-full {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .subjects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .subjects-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Hide number input spinners */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

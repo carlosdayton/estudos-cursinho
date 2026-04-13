@@ -1,9 +1,11 @@
 import Dashboard from './components/Dashboard'
 import { Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ToastProvider } from './context/ToastContext';
 
 function App() {
   return (
+    <ToastProvider>
     <div className="App">
       <Dashboard />
 
@@ -48,6 +50,7 @@ function App() {
         </motion.div>
       </footer>
     </div>
+    </ToastProvider>
   );
 }
 

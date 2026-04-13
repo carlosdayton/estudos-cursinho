@@ -1,145 +1,351 @@
 import { useState } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import type { Simulado } from '../utils/studyLogic';
-import { Plus, BarChart3, TrendingUp, X, Save } from 'lucide-react';
+import { useSimulados } from '../hooks/useSimulados';
+import { useToastContext } from '../context/ToastContext';
+import { ConfirmModal } from './ConfirmModal';
+import type { SimuladoScores } from '../utils/studyLogic';
+import { Plus, BarChart3, TrendingUp, X, Save, ArrowUp, ArrowDown, ArrowRight, Trophy, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const AREA_LABELS: Record<keyof SimuladoScores, string> = {
+  linguagens: 'Linguagens',
+  humanas: 'Humanas',
+  natureza: 'Natureza',
+  matematica: 'Matemática',
+  redacao: 'Redação',
+};
+
+const AREA_COLORS: Record<keyof SimuladoScores, string> = {
+  linguagens: '#818cf8',
+  humanas: '#f472b6',
+  natureza: '#34d399',
+  matematica: '#60a5fa',
+  redacao: '#fbbf24',
+};
+
+function ScoreInput({ label, color, value, onChange }: {
+  label: string; color: string; value: number; onChange: (v: number) => void;
+}) {
+  const clamp = (v: number) => Math.max(0, Math.min(1000, v));
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
+      <label style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color }}>
+        {label.substring(0, 3)}
+      </label>
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        background: 'rgba(255,255,255,0.05)',
+        border: `1px solid ${color}33`,
+        borderRadius: '10px', overflow: 'hidden',
+        minWidth: 0,
+      }}>
+        <button
+          type="button"
+          onClick={() => onChange(clamp(value - 1))}
+          style={{
+            width: '28px', height: '38px', border: 'none', cursor: 'pointer', flexShrink: 0,
+            background: 'transparent', color: 'rgba(255,255,255,0.4)',
+            fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s', fontFamily: 'Lexend, sans-serif',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = color)}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+        >−</button>
+        <input
+          type="number"
+          value={value || ''}
+          onChange={e => onChange(clamp(Number(e.target.value)))}
+          placeholder="0"
+          style={{
+            flex: 1, background: 'transparent', border: 'none',
+            color: '#fff', fontSize: '1rem', fontWeight: 900,
+            textAlign: 'center', fontFamily: 'Lexend, sans-serif',
+            outline: 'none', padding: '0', minWidth: 0, width: '100%',
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => onChange(clamp(value + 1))}
+          style={{
+            width: '28px', height: '38px', border: 'none', cursor: 'pointer', flexShrink: 0,
+            background: 'transparent', color: 'rgba(255,255,255,0.4)',
+            fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s', fontFamily: 'Lexend, sans-serif',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = color)}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+        >+</button>
+      </div>
+    </div>
+  );
+}
+
+const TREND_CONFIG = {
+  up:     { icon: ArrowUp,    color: '#34d399', label: 'Em alta',  bg: 'rgba(52,211,153,0.1)',  border: 'rgba(52,211,153,0.25)' },
+  down:   { icon: ArrowDown,  color: '#f87171', label: 'Em queda', bg: 'rgba(248,113,113,0.1)', border: 'rgba(248,113,113,0.25)' },
+  stable: { icon: ArrowRight, color: '#94a3b8', label: 'Estável',  bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.25)' },
+};
+
 export default function SimuladosTracker() {
-  const [simulados, setSimulados] = useLocalStorage<Simulado[]>('enem-simulados-data', []);
+  const { simulados, addSimulado, deleteSimulado, averageScore, bestScore, trend } = useSimulados();
+  const { showToast } = useToastContext();
+
   const [showAdd, setShowAdd] = useState(false);
-  const [newScores, setNewScores] = useState({
-    linguagens: 0,
-    humanas: 0,
-    natureza: 0,
-    matematica: 0,
-    redacao: 0
+  const [newScores, setNewScores] = useState<SimuladoScores>({
+    linguagens: 0, humanas: 0, natureza: 0, matematica: 0, redacao: 0,
   });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const handleAdd = () => {
-    const total = Object.values(newScores).reduce((a, b) => a + b, 0);
-    const newSim: Simulado = {
-      id: Math.random().toString(36).substr(2, 9),
-      date: new Date().toISOString(),
-      scores: { ...newScores },
-      total
-    };
-    setSimulados([newSim, ...simulados]);
+    addSimulado(newScores);
     setShowAdd(false);
     setNewScores({ linguagens: 0, humanas: 0, natureza: 0, matematica: 0, redacao: 0 });
+    showToast('Simulado adicionado com sucesso!', 'success');
   };
 
-  const deleteSimulado = (id: string) => {
-    setSimulados(simulados.filter(s => s.id !== id));
+  const requestDelete = (id: string) => { setPendingDeleteId(id); setConfirmOpen(true); };
+  const handleConfirmDelete = () => {
+    if (pendingDeleteId) { deleteSimulado(pendingDeleteId); showToast('Simulado excluído.', 'info'); }
+    setConfirmOpen(false); setPendingDeleteId(null);
   };
+  const handleCancelDelete = () => { setConfirmOpen(false); setPendingDeleteId(null); };
 
-  const averageScore = simulados.length > 0 
-    ? Math.round(simulados.reduce((acc, s) => acc + s.total, 0) / simulados.length) 
-    : 0;
+  const tc = TREND_CONFIG[trend];
+  const TrendIcon = tc.icon;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
-            <BarChart3 size={24} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
+            background: 'rgba(129,140,248,0.12)', border: '1px solid rgba(129,140,248,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8',
+          }}>
+            <BarChart3 size={22} />
           </div>
           <div>
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Rastreador de Simulados</h3>
-            <p className="text-white text-xs font-bold uppercase tracking-widest">Acompanhe sua evolução rumo à aprovação</p>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', margin: 0 }}>
+              Rastreador de Simulados
+            </h3>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
+              Acompanhe sua evolução
+            </p>
           </div>
         </div>
-        
-        <button 
+        <button
           onClick={() => setShowAdd(!showAdd)}
-          className="btn btn-primary px-6 py-3 flex items-center gap-2"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '0.625rem 1.25rem', borderRadius: '12px', border: 'none', cursor: 'pointer',
+            background: '#818cf8', color: '#020617',
+            fontSize: '13px', fontWeight: 800, fontFamily: 'Lexend, sans-serif',
+            letterSpacing: '0.05em', textTransform: 'uppercase',
+            boxShadow: '0 4px 20px rgba(129,140,248,0.4)',
+            transition: 'all 0.2s ease', flexShrink: 0,
+          }}
         >
-          <Plus size={20} />
-          <span>Novo Simulado</span>
+          <Plus size={16} strokeWidth={3} />
+          Novo Simulado
         </button>
       </div>
 
+      {/* Add form */}
       <AnimatePresence>
         {showAdd && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="glass-card p-10 border-indigo-500/30 bg-indigo-500/[0.02]"
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            style={{
+              background: 'rgba(129,140,248,0.05)',
+              border: '1px solid rgba(129,140,248,0.2)',
+              borderRadius: '20px', padding: '1.5rem',
+              overflow: 'hidden',
+            }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
-              {Object.entries(newScores).map(([key, value]) => (
-                <div key={key} className="flex flex-col gap-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/50">{key}</label>
-                  <input 
-                    type="number" 
-                    value={value || ''}
-                    onChange={(e) => setNewScores({...newScores, [key]: Number(e.target.value)})}
-                    className="input text-center text-xl font-black bg-white/5 border-white/10 focus:border-indigo-500"
-                    placeholder="0"
-                  />
-                </div>
+            <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '1rem' }}>
+              Notas por área
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '0.625rem', marginBottom: '1.25rem' }}>
+              {(Object.keys(newScores) as (keyof SimuladoScores)[]).map(key => (
+                <ScoreInput
+                  key={key}
+                  label={AREA_LABELS[key]}
+                  color={AREA_COLORS[key]}
+                  value={newScores[key]}
+                  onChange={v => setNewScores({ ...newScores, [key]: v })}
+                />
               ))}
             </div>
-            <div className="flex justify-end gap-3">
-              <button onClick={() => setShowAdd(false)} className="btn bg-slate-800 text-slate-300">Cancelar</button>
-              <button onClick={handleAdd} className="btn btn-primary px-10"><Save size={18} className="mr-2" /> Salvar Resultado</button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button onClick={() => setShowAdd(false)} style={{
+                padding: '0.5rem 1.25rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)',
+                fontSize: '13px', fontWeight: 700, fontFamily: 'Lexend, sans-serif', cursor: 'pointer',
+              }}>
+                Cancelar
+              </button>
+              <button onClick={handleAdd} style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '0.5rem 1.5rem', borderRadius: '10px', border: 'none',
+                background: '#818cf8', color: '#020617',
+                fontSize: '13px', fontWeight: 800, fontFamily: 'Lexend, sans-serif', cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(129,140,248,0.4)',
+              }}>
+                <Save size={14} /> Salvar
+              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
+      {/* Main grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1.25rem', alignItems: 'start' }}>
+
+        {/* Simulados list */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {simulados.map(sim => (
-            <motion.div 
+            <motion.div
               layout
               key={sim.id}
-              className="glass-card p-6 flex flex-col sm:flex-row items-center justify-between gap-6 border-white/5 hover:border-white/10 transition-all"
+              style={{
+                background: 'rgba(30,41,59,0.4)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '16px', padding: '1rem 1.25rem',
+                display: 'flex', alignItems: 'center', gap: '1rem',
+                transition: 'border-color 0.2s',
+              }}
             >
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
-                  {new Date(sim.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                </span>
-                <span className="text-3xl font-black text-white tracking-tighter">Total: {sim.total}</span>
+              {/* Date + total */}
+              <div style={{ minWidth: '120px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>
+                  {new Date(sim.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                  {sim.total}
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.3)', marginLeft: '4px' }}>pts</span>
+                </p>
               </div>
-              
-              <div className="flex gap-4 flex-wrap justify-center">
-                {Object.entries(sim.scores).map(([area, score]) => (
-                  <div key={area} className="flex flex-col items-center px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-white/40">{area.substring(0, 3)}</span>
-                    <span className="text-sm font-bold text-indigo-300">{score}</span>
+
+              {/* Area scores */}
+              <div style={{ display: 'flex', gap: '0.5rem', flex: 1, flexWrap: 'wrap' }}>
+                {(Object.entries(sim.scores) as [keyof SimuladoScores, number][]).map(([area, score]) => (
+                  <div key={area} style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    padding: '4px 10px', borderRadius: '8px',
+                    background: `${AREA_COLORS[area]}10`,
+                    border: `1px solid ${AREA_COLORS[area]}25`,
+                    minWidth: '44px',
+                  }}>
+                    <span style={{ fontSize: '8px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: AREA_COLORS[area] }}>
+                      {area.substring(0, 3)}
+                    </span>
+                    <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{score}</span>
                   </div>
                 ))}
               </div>
 
-              <button 
-                onClick={() => deleteSimulado(sim.id)}
-                className="p-2 text-slate-600 hover:text-red-400 transition-all"
+              {/* Delete */}
+              <button
+                onClick={() => requestDelete(sim.id)}
+                aria-label="Excluir simulado"
+                style={{
+                  width: '32px', height: '32px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  background: 'transparent', color: 'rgba(255,255,255,0.2)', transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.15)'; (e.currentTarget as HTMLButtonElement).style.color = '#f87171'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.2)'; }}
               >
-                <X size={20} />
+                <X size={16} />
               </button>
             </motion.div>
           ))}
+
           {simulados.length === 0 && (
-            <div className="py-20 text-center border-2 border-dashed border-slate-800 rounded-[32px]">
-              <TrendingUp size={48} className="mx-auto text-slate-800 mb-4 opacity-20" />
-              <p className="text-slate-600 font-bold uppercase tracking-widest text-sm">Nenhum simulado registrado ainda.</p>
+            <div style={{
+              padding: '3rem 1rem', textAlign: 'center',
+              border: '1px dashed rgba(129,140,248,0.2)', borderRadius: '16px',
+              background: 'rgba(129,140,248,0.03)',
+            }}>
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '14px', margin: '0 auto 0.75rem',
+                background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8',
+              }}>
+                <TrendingUp size={22} />
+              </div>
+              <p style={{ fontSize: '14px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '4px' }}>
+                Nenhum simulado ainda
+              </p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>
+                Clique em "Novo Simulado" para começar
+              </p>
             </div>
           )}
         </div>
 
-        <div className="glass-card p-8 flex flex-col items-center justify-center text-center gap-6 border-indigo-500/20 bg-indigo-500/[0.02]">
-          <span className="text-xs font-black text-white uppercase tracking-[0.4em]">Média Geral</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-              {averageScore}
-            </span>
-          </div>
-          <p className="text-xs text-white font-medium leading-relaxed px-4">
-            Sua média está baseada nos últimos {simulados.length} simulados. Continue focado!
+        {/* Stats sidebar */}
+        <div style={{
+          background: 'rgba(129,140,248,0.05)',
+          border: '1px solid rgba(129,140,248,0.15)',
+          borderRadius: '20px', padding: '1.5rem',
+          display: 'flex', flexDirection: 'column', gap: '1.25rem',
+          position: 'sticky', top: '1rem',
+        }}>
+          <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+            Estatísticas
           </p>
+
+          {/* Average */}
+          <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+              Média Geral
+            </p>
+            <p style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
+              {averageScore}
+            </p>
+          </div>
+
+          {/* Best */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(251,191,36,0.06)', borderRadius: '12px', border: '1px solid rgba(251,191,36,0.15)' }}>
+            <Trophy size={18} color="#fbbf24" />
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Melhor</p>
+              <p style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fbbf24', letterSpacing: '-0.02em', margin: 0 }}>{bestScore}</p>
+            </div>
+          </div>
+
+          {/* Trend */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: tc.bg, borderRadius: '12px', border: `1px solid ${tc.border}` }}>
+            <Target size={18} color={tc.color} />
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Tendência</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <TrendIcon size={14} color={tc.color} />
+                <p style={{ fontSize: '13px', fontWeight: 800, color: tc.color, margin: 0 }}>{tc.label}</p>
+              </div>
+            </div>
+          </div>
+
+          {simulados.length > 0 && (
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', textAlign: 'center', lineHeight: 1.5 }}>
+              Baseado em {simulados.length} simulado{simulados.length !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmOpen}
+        message="Tem certeza que deseja excluir este simulado? Esta ação não pode ser desfeita."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 }
