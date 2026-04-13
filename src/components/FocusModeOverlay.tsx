@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, RotateCcw, Coffee, Focus } from 'lucide-react';
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
-import { useFocusMode } from '../context/FocusModeContext';
+import { useFocusMode, resolveActiveSubject } from '../context/FocusModeContext';
 import { useStudyCycles } from '../hooks/useStudyCycles';
 import { useActiveCycle } from '../hooks/useActiveCycle';
 import ParticleBackground from './ParticleBackground';
@@ -11,14 +11,17 @@ import CycleCompletionScreen from './CycleCompletionScreen';
 import type { Subject } from '../utils/studyLogic';
 
 interface FocusModeOverlayProps {
-  activeSubject: Subject | null;
+  subjects: Subject[];
   onExit: () => void;
 }
 
-export default function FocusModeOverlay({ activeSubject, onExit }: FocusModeOverlayProps) {
-  const { cycleProgress, clearCycle, startCycle, activeCycleId, advanceCycle, subjectJustChanged } = useFocusMode();
+export default function FocusModeOverlay({ subjects, onExit }: FocusModeOverlayProps) {
+  const { cycleProgress, clearCycle, startCycle, activeCycleId, advanceCycle, subjectJustChanged, activeSubjectId } = useFocusMode();
   const { getCycleById } = useStudyCycles();
   const { activeCycleState } = useActiveCycle();
+
+  // Resolve a matéria ativa aqui dentro — garante que subjects já estão carregados
+  const activeSubject = resolveActiveSubject(activeSubjectId, subjects);
   // Para o indicador de Pomodoros por matéria
   const activeCycle = activeCycleId ? getCycleById(activeCycleId) : undefined;
   const pomodorosNeeded = activeCycle ? Math.max(1, activeCycle.pomodorosPerSubject ?? 1) : 1;

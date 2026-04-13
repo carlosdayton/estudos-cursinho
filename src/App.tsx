@@ -2,15 +2,14 @@ import Dashboard from './components/Dashboard'
 import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ToastProvider } from './context/ToastContext';
-import { FocusModeProvider, useFocusMode, resolveActiveSubject } from './context/FocusModeContext';
+import { FocusModeProvider, useFocusMode } from './context/FocusModeContext';
 import FocusModeOverlay from './components/FocusModeOverlay';
 import FocusModeButton from './components/FocusModeButton';
 import { useSubjects } from './hooks/useSubjects';
 
 function AppInner() {
-  const { isFocusMode, activeSubjectId, exitFocusMode } = useFocusMode();
+  const { isFocusMode, exitFocusMode } = useFocusMode();
   const { subjects } = useSubjects();
-  const activeSubject = resolveActiveSubject(activeSubjectId, subjects);
 
   return (
     <div className="App">
@@ -21,7 +20,7 @@ function AppInner() {
 
       <AnimatePresence>
         {isFocusMode && (
-          <FocusModeOverlay activeSubject={activeSubject} onExit={exitFocusMode} />
+          <FocusModeOverlay subjects={subjects} onExit={exitFocusMode} />
         )}
       </AnimatePresence>
 
