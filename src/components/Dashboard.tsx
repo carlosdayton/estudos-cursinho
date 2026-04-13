@@ -10,6 +10,7 @@ import { Plus, GraduationCap, LayoutGrid, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PomodoroTimer from './PomodoroTimer';
 import RevisionPanel from './RevisionPanel';
+import FocusModeButton from './FocusModeButton';
 import { getDaysUntilEnem, ENEM_2026_DATE } from '../utils/studyLogic';
 
 // 15.2 — Lazy loading para SimuladosTracker e StatsPanel
@@ -287,6 +288,7 @@ export default function Dashboard() {
               <Plus size={24} strokeWidth={3} />
               Nova Matéria
             </button>
+            <FocusModeButton subjects={subjects} />
           </motion.div>
         </header>
 
