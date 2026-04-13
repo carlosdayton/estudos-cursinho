@@ -1,13 +1,18 @@
-import { Play, Pause, RotateCcw, Coffee, Focus } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { usePomodoroTimer } from '../hooks/usePomodoroTimer';
+import { useState } from 'react';
+import { Play, Pause, RotateCcw, Coffee, Focus, Settings } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { usePomodoroTimer, WORK_DURATION_OPTIONS, BREAK_DURATION_OPTIONS } from '../hooks/usePomodoroTimer';
 
 export default function PomodoroTimer() {
-  const { isActive, mode, sessionsCompleted, formattedTime, progress, start, pause, reset, switchMode } = usePomodoroTimer();
+  const {
+    isActive, mode, sessionsCompleted, formattedTime, progress,
+    start, pause, reset, switchMode,
+    workMinutes, breakMinutes, setWorkMinutes, setBreakMinutes,
+  } = usePomodoroTimer();
+  const [showSettings, setShowSettings] = useState(false);
   const toggleTimer = () => (isActive ? pause() : start());
   const modeLabel = mode === 'work' ? 'Foco' : 'Pausa';
   const statusLabel = isActive ? `${modeLabel} em andamento — ${formattedTime}` : `${modeLabel} pausado — ${formattedTime}`;
-
   const isWork = mode === 'work';
   const accentColor = isWork ? '#818cf8' : '#34d399';
   const accentGlow = isWork ? 'rgba(129,140,248,0.35)' : 'rgba(52,211,153,0.35)';
@@ -20,24 +25,14 @@ export default function PomodoroTimer() {
       border: '1px solid rgba(255,255,255,0.12)',
       borderRadius: '24px',
       padding: '2rem',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '1.5rem',
-      position: 'relative',
-      overflow: 'hidden',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem',
+      position: 'relative', overflow: 'hidden',
     }}>
       {/* shimmer top */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-        background: `linear-gradient(90deg, transparent, ${accentColor}66, transparent)`,
-      }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${accentColor}66, transparent)` }} />
 
-      {/* sr-only live region */}
-      <div aria-live="polite" aria-atomic="true" style={{
-        position: 'absolute', width: '1px', height: '1px',
-        overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap',
-      }}>
+      {/* sr-only */}
+      <div aria-live="polite" aria-atomic="true" style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}>
         {statusLabel}
       </div>
 
@@ -63,7 +58,7 @@ export default function PomodoroTimer() {
               }}
             >
               {m === 'work' ? <Focus size={13} /> : <Coffee size={13} />}
-              {m === 'work' ? 'Foco' : 'Pausa'}
+              {m === 'work' ? `Foco ${workMinutes}m` : `Pausa ${breakMinutes}m`}
             </button>
           );
         })}
@@ -82,20 +77,13 @@ export default function PomodoroTimer() {
             style={{ transition: 'stroke-dashoffset 1s linear', filter: `drop-shadow(0 0 8px ${accentGlow})` }}
           />
         </svg>
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px',
-        }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
           <motion.span
             key={formattedTime}
             initial={{ scale: 0.92, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             aria-hidden="true"
-            style={{
-              fontSize: '2.25rem', fontWeight: 900, color: '#fff',
-              letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums',
-              textShadow: `0 0 20px ${accentGlow}`,
-            }}
+            style={{ fontSize: '2.25rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums', textShadow: `0 0 20px ${accentGlow}` }}
           >
             {formattedTime}
           </motion.span>
@@ -133,7 +121,81 @@ export default function PomodoroTimer() {
         >
           <RotateCcw size={20} />
         </button>
+        <button
+          onClick={() => setShowSettings(s => !s)}
+          aria-label="Configurar duração"
+          aria-expanded={showSettings}
+          style={{
+            width: '56px', height: '56px', borderRadius: '18px',
+            border: `1px solid ${showSettings ? 'rgba(129,140,248,0.4)' : 'rgba(255,255,255,0.1)'}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: showSettings ? 'rgba(129,140,248,0.12)' : 'rgba(255,255,255,0.05)',
+            color: showSettings ? '#818cf8' : 'rgba(255,255,255,0.6)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <Settings size={18} />
+        </button>
       </div>
+
+      {/* Duration settings panel */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: 'hidden', width: '100%' }}
+          >
+            <div style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '16px', padding: '1rem',
+              display: 'flex', flexDirection: 'column', gap: '0.75rem',
+            }}>
+              <div>
+                <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#818cf8', fontFamily: 'Lexend, sans-serif', margin: '0 0 0.4rem' }}>
+                  Foco (min)
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                  {WORK_DURATION_OPTIONS.map(n => (
+                    <button key={n} onClick={() => setWorkMinutes(n)} style={{
+                      padding: '4px 10px', borderRadius: '8px',
+                      border: `1px solid ${workMinutes === n ? 'rgba(129,140,248,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                      background: workMinutes === n ? 'rgba(129,140,248,0.2)' : 'rgba(255,255,255,0.04)',
+                      color: workMinutes === n ? '#818cf8' : 'rgba(255,255,255,0.4)',
+                      fontSize: '12px', fontWeight: 700, fontFamily: 'Lexend, sans-serif',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#34d399', fontFamily: 'Lexend, sans-serif', margin: '0 0 0.4rem' }}>
+                  Pausa (min)
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                  {BREAK_DURATION_OPTIONS.map(n => (
+                    <button key={n} onClick={() => setBreakMinutes(n)} style={{
+                      padding: '4px 10px', borderRadius: '8px',
+                      border: `1px solid ${breakMinutes === n ? 'rgba(52,211,153,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                      background: breakMinutes === n ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.04)',
+                      color: breakMinutes === n ? '#34d399' : 'rgba(255,255,255,0.4)',
+                      fontSize: '12px', fontWeight: 700, fontFamily: 'Lexend, sans-serif',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Sessions */}
       {sessionsCompleted > 0 && (

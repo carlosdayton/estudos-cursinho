@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Focus, X, BookOpen } from 'lucide-react';
 import type { Subject } from '../utils/studyLogic';
@@ -38,7 +39,7 @@ export default function SubjectSelectModal({
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen, onCancel]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -57,7 +58,7 @@ export default function SubjectSelectModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '1rem',
+            padding: '1.5rem',
           }}
         >
           <motion.div
@@ -79,7 +80,7 @@ export default function SubjectSelectModal({
               padding: '2rem',
               width: '100%',
               maxWidth: '440px',
-              maxHeight: '80vh',
+              maxHeight: 'calc(100dvh - 4rem)',
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
@@ -185,7 +186,8 @@ export default function SubjectSelectModal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

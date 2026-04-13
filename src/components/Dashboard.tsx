@@ -17,6 +17,7 @@ const SimuladosTracker = lazy(() => import('./SimuladosTracker'));
 const StatsPanel = lazy(() => import('./StatsPanel'));
 const StudyPlannerPanel = lazy(() => import('./StudyPlannerPanel'));
 const FlashcardsPanel = lazy(() => import('./flashcards/FlashcardsPanel'));
+const StudyCyclesPanel = lazy(() => import('./StudyCyclesPanel'));
 
 // Fallback simples para Suspense
 function SectionSkeleton() {
@@ -426,6 +427,17 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {/* StudyCyclesPanel */}
+        <section style={{
+          marginTop: '3rem',
+          paddingTop: '3rem',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <StudyCyclesPanel subjects={subjects} />
+          </Suspense>
+        </section>
 
         {/* StudyPlannerPanel */}
         <section style={{

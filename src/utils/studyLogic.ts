@@ -199,3 +199,39 @@ export const getDaysUntilEnem = (): number => {
   const diff = new Date(ENEM_2026_DATE).getTime() - new Date().getTime();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 };
+
+// ─── Study Cycles ─────────────────────────────────────────────────────────────
+
+/**
+ * Representa um ciclo de estudos: sequência ordenada de matérias.
+ */
+export interface StudyCycle {
+  id: string;           // UUID gerado no cliente
+  name: string;         // Ex: "Ciclo Exatas"
+  subjectIds: string[]; // IDs ordenados das matérias
+  pomodorosPerSubject: number; // Quantos Pomodoros por matéria (padrão: 1, range: 1-5)
+  createdAt: string;    // ISO date string
+  loop?: boolean;       // Se true, reinicia ao completar (padrão: false)
+}
+
+/**
+ * Estado de execução de um ciclo ativo.
+ * Persistido em localStorage['active-cycle-state'].
+ */
+export interface ActiveCycleState {
+  cycleId: string;
+  currentIndex: number;       // índice atual dentro de subjectIds (0-based)
+  pomodorosInCurrentSubject: number; // Pomodoros completados na matéria atual
+  isCompleted: boolean;
+  startedAt: string;          // ISO date string
+}
+
+/**
+ * Progresso derivado do ciclo ativo — passado para o overlay.
+ */
+export interface CycleProgress {
+  currentIndex: number;  // 0-based
+  total: number;
+  cycleName: string;
+  isCompleted: boolean;
+}
