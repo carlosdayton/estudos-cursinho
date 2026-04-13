@@ -16,6 +16,7 @@ import { getDaysUntilEnem, ENEM_2026_DATE } from '../utils/studyLogic';
 const SimuladosTracker = lazy(() => import('./SimuladosTracker'));
 const StatsPanel = lazy(() => import('./StatsPanel'));
 const StudyPlannerPanel = lazy(() => import('./StudyPlannerPanel'));
+const FlashcardsPanel = lazy(() => import('./flashcards/FlashcardsPanel'));
 
 // Fallback simples para Suspense
 function SectionSkeleton() {
@@ -453,6 +454,17 @@ export default function Dashboard() {
               <SimuladosTracker />
             </Suspense>
           </div>
+        </section>
+
+        {/* FlashcardsPanel */}
+        <section style={{
+          marginTop: '3rem',
+          paddingTop: '3rem',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <FlashcardsPanel subjects={subjects} />
+          </Suspense>
         </section>
       </div>
     </div>
