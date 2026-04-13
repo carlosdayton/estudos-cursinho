@@ -293,7 +293,7 @@ export default function Dashboard() {
 
         {/* FocusModeButton movido para o footer em App.tsx */}
 
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', alignItems: 'stretch', padding: '1rem 0' }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'stretch', padding: '1rem 0' }}>
           <PomodoroTimer />
           <EnemCountdown />
           <RevisionPanel subjects={subjects} updateTopic={updateTopic} />

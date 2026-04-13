@@ -117,7 +117,7 @@ export default function SimuladosTracker() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
@@ -145,6 +145,7 @@ export default function SimuladosTracker() {
             letterSpacing: '0.05em', textTransform: 'uppercase',
             boxShadow: '0 4px 20px rgba(129,140,248,0.4)',
             transition: 'all 0.2s ease', flexShrink: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           <Plus size={16} strokeWidth={3} />
@@ -169,7 +170,7 @@ export default function SimuladosTracker() {
             <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '1rem' }}>
               Notas por área
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '0.625rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '0.625rem', marginBottom: '1.25rem' }}>
               {(Object.keys(newScores) as (keyof SimuladoScores)[]).map(key => (
                 <ScoreInput
                   key={key}
@@ -203,7 +204,58 @@ export default function SimuladosTracker() {
       </AnimatePresence>
 
       {/* Main grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1.25rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '1.25rem', alignItems: 'start' }}>
+
+        {/* Stats sidebar — aparece primeiro no mobile */}
+        <div style={{
+          background: 'rgba(129,140,248,0.05)',
+          border: '1px solid rgba(129,140,248,0.15)',
+          borderRadius: '20px', padding: '1.5rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+          gap: '0.75rem',
+        }}>
+          <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.4)', margin: 0, gridColumn: '1 / -1' }}>
+            Estatísticas
+          </p>
+
+          {/* Average */}
+          <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+              Média Geral
+            </p>
+            <p style={{ fontSize: '2rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
+              {averageScore}
+            </p>
+          </div>
+
+          {/* Best */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(251,191,36,0.06)', borderRadius: '12px', border: '1px solid rgba(251,191,36,0.15)' }}>
+            <Trophy size={18} color="#fbbf24" />
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Melhor</p>
+              <p style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fbbf24', letterSpacing: '-0.02em', margin: 0 }}>{bestScore}</p>
+            </div>
+          </div>
+
+          {/* Trend */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: tc.bg, borderRadius: '12px', border: `1px solid ${tc.border}` }}>
+            <Target size={18} color={tc.color} />
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Tendência</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <TrendIcon size={14} color={tc.color} />
+                <p style={{ fontSize: '13px', fontWeight: 800, color: tc.color, margin: 0 }}>{tc.label}</p>
+              </div>
+            </div>
+          </div>
+
+          {simulados.length > 0 && (
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', textAlign: 'center', lineHeight: 1.5, gridColumn: '1 / -1' }}>
+              Baseado em {simulados.length} simulado{simulados.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
 
         {/* Simulados list */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -286,56 +338,6 @@ export default function SimuladosTracker() {
                 Clique em "Novo Simulado" para começar
               </p>
             </div>
-          )}
-        </div>
-
-        {/* Stats sidebar */}
-        <div style={{
-          background: 'rgba(129,140,248,0.05)',
-          border: '1px solid rgba(129,140,248,0.15)',
-          borderRadius: '20px', padding: '1.5rem',
-          display: 'flex', flexDirection: 'column', gap: '1.25rem',
-          position: 'sticky', top: '1rem',
-        }}>
-          <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-            Estatísticas
-          </p>
-
-          {/* Average */}
-          <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
-              Média Geral
-            </p>
-            <p style={{ fontSize: '2.5rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
-              {averageScore}
-            </p>
-          </div>
-
-          {/* Best */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(251,191,36,0.06)', borderRadius: '12px', border: '1px solid rgba(251,191,36,0.15)' }}>
-            <Trophy size={18} color="#fbbf24" />
-            <div>
-              <p style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Melhor</p>
-              <p style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fbbf24', letterSpacing: '-0.02em', margin: 0 }}>{bestScore}</p>
-            </div>
-          </div>
-
-          {/* Trend */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: tc.bg, borderRadius: '12px', border: `1px solid ${tc.border}` }}>
-            <Target size={18} color={tc.color} />
-            <div>
-              <p style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Tendência</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <TrendIcon size={14} color={tc.color} />
-                <p style={{ fontSize: '13px', fontWeight: 800, color: tc.color, margin: 0 }}>{tc.label}</p>
-              </div>
-            </div>
-          </div>
-
-          {simulados.length > 0 && (
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', textAlign: 'center', lineHeight: 1.5 }}>
-              Baseado em {simulados.length} simulado{simulados.length !== 1 ? 's' : ''}
-            </p>
           )}
         </div>
       </div>

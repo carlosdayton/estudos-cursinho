@@ -201,7 +201,7 @@ export default function StatsPanel({ subjects, simulados, pomodoroSessions }: St
       {/* Cards grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
         gap: '1rem',
       }}>
         <StatCard
