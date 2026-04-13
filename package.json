@@ -11,6 +11,7 @@
     "test": "vitest --run"
   },
   "dependencies": {
+    "canvas": "^3.2.3",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
     "react": "^19.2.4",
@@ -35,6 +36,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.4",
+    "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.1.4"
   }
 }
