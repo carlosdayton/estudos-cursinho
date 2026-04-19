@@ -84,6 +84,7 @@ export default function AppLayout({ activeTab, onTabChange, children, onSignOut,
         transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1), min-width 0.3s cubic-bezier(0.4,0,0.2,1)',
         overflow: 'hidden',
         zIndex: 100,
+        paddingBottom: '64px', // compensate for fixed footer height
       }}>
         {/* Logo */}
         <div style={{
@@ -112,7 +113,7 @@ export default function AppLayout({ activeTab, onTabChange, children, onSignOut,
         </div>
 
         {/* Nav items */}
-        <nav style={{ flex: 1, padding: '0.75rem 0', overflowY: 'auto', overflowX: 'hidden' }}>
+        <nav style={{ flex: 1, padding: '0.75rem 0', overflowY: 'auto', overflowX: 'hidden', paddingBottom: '0.75rem' }}>
           {NAV_ITEMS.map(item => {
             const isActive = activeTab === item.id;
             return (
@@ -236,13 +237,14 @@ export default function AppLayout({ activeTab, onTabChange, children, onSignOut,
       {/* Main content */}
       <main style={{
         flex: 1,
-        width: 0, /* forces flex child to shrink properly */
+        width: 0,
         minWidth: 0,
         height: '100vh',
         overflowY: 'auto',
         overflowX: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        paddingBottom: '64px', // compensate for fixed footer
       }}>
         <AnimatePresence mode="wait">
           <motion.div
