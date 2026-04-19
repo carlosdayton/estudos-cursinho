@@ -70,37 +70,51 @@ export default function RevisionPanel({ subjects, updateTopic }: Props) {
   }
 
   return (
-    <div className="w-full">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {/* Toggle button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full glass-card p-6 flex items-center justify-between border-amber-500/20 hover:bg-amber-500/5 transition-all group"
         aria-expanded={isOpen}
         aria-label="Painel de revisões"
+        style={{
+          width: '100%', border: 'none', cursor: 'pointer', textAlign: 'left',
+          background: 'rgba(30,41,59,0.4)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderRadius: '20px',
+          padding: '1.25rem 1.5rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          outline: '1px solid rgba(245,158,11,0.2)',
+          transition: 'background 0.2s',
+        }}
       >
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)]">
-            <Timer size={24} className="animate-pulse" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            width: '44px', height: '44px', borderRadius: '14px', flexShrink: 0,
+            background: '#f59e0b', color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 20px rgba(245,158,11,0.4)',
+          }}>
+            <Timer size={22} />
           </div>
-          <div className="text-left">
-            <h4 className="text-lg font-black text-white uppercase tracking-wider">Revisões</h4>
-            <p className="text-sm text-white font-bold uppercase tracking-widest">
+          <div style={{ textAlign: 'left' }}>
+            <h4 style={{ fontSize: '15px', fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Revisões</h4>
+            <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               {reviewsDue.length > 0 && (
-                <span className="text-amber-400">
-                  {reviewsDue.length} vencida{reviewsDue.length !== 1 ? 's' : ''}
-                </span>
+                <span style={{ color: '#fbbf24' }}>{reviewsDue.length} vencida{reviewsDue.length !== 1 ? 's' : ''}</span>
               )}
               {reviewsDue.length > 0 && upcomingReviews.length > 0 && (
-                <span className="text-white/40 mx-1">·</span>
+                <span style={{ color: 'rgba(255,255,255,0.3)', margin: '0 4px' }}>·</span>
               )}
               {upcomingReviews.length > 0 && (
-                <span className="text-indigo-400">
-                  {upcomingReviews.length} próxima{upcomingReviews.length !== 1 ? 's' : ''}
-                </span>
+                <span style={{ color: '#818cf8' }}>{upcomingReviews.length} próxima{upcomingReviews.length !== 1 ? 's' : ''}</span>
               )}
             </p>
           </div>
         </div>
-        {isOpen ? <ChevronUp className="text-white" /> : <ChevronDown className="text-white" />}
+        <div style={{ color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
+          {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </div>
       </button>
 
       <AnimatePresence>
@@ -109,42 +123,50 @@ export default function RevisionPanel({ subjects, updateTopic }: Props) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden mt-4 space-y-6"
+            style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
           >
             {/* Revisões vencidas */}
             {reviewsDue.length > 0 && (
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 mb-3 px-1">
+                <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#fbbf24', marginBottom: '0.75rem', paddingLeft: '4px' }}>
                   Vencidas
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
                   {reviewsDue.map(item => (
                     <div
                       key={item.topicId}
-                      className="glass-card p-5 flex items-center justify-between border-amber-500/10 bg-amber-500/[0.03]"
+                      style={{
+                        background: 'rgba(245,158,11,0.05)',
+                        border: '1px solid rgba(245,158,11,0.15)',
+                        borderRadius: '16px', padding: '1rem 1.25rem',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem',
+                      }}
                     >
-                      <div className="flex flex-col gap-1 min-w-0 flex-1 mr-3">
-                        <span
-                          className="text-[10px] font-black uppercase tracking-[0.2em] truncate"
-                          style={{ color: item.subjectColor }}
-                        >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0, flex: 1 }}>
+                        <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: item.subjectColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {item.subjectName}
                         </span>
-                        <h5 className="text-base font-black text-white tracking-tight truncate">{item.topicName}</h5>
-                        <div className="flex items-center gap-1 text-amber-400/80">
-                          <AlertCircle size={12} />
-                          <span className="text-[10px] font-bold uppercase tracking-widest">
-                            {item.daysOverdue === 0
-                              ? 'Vence hoje'
-                              : `${item.daysOverdue} dia${item.daysOverdue !== 1 ? 's' : ''} atrasado`}
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.topicName}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <AlertCircle size={11} color="rgba(251,191,36,0.8)" />
+                          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(251,191,36,0.8)' }}>
+                            {item.daysOverdue === 0 ? 'Vence hoje' : `${item.daysOverdue} dia${item.daysOverdue !== 1 ? 's' : ''} atrasado`}
                           </span>
                         </div>
                       </div>
                       <button
                         onClick={() => markReviewed(item.topicId, item.subjectId)}
-                        className="flex-shrink-0 p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 transition-all"
                         aria-label={`Marcar ${item.topicName} como revisado`}
-                        title="Marcar como revisado"
+                        style={{
+                          width: '36px', height: '36px', borderRadius: '10px', border: 'none', cursor: 'pointer', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'rgba(251,191,36,0.12)', color: '#fbbf24',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(251,191,36,0.25)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(251,191,36,0.12)'; }}
                       >
                         <CheckCircle2 size={18} />
                       </button>
@@ -154,39 +176,39 @@ export default function RevisionPanel({ subjects, updateTopic }: Props) {
               </div>
             )}
 
-            {/* Revisões futuras — próximos 7 dias */}
+            {/* Revisões futuras */}
             {upcomingReviews.length > 0 && (
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-3 px-1">
+                <p style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#818cf8', marginBottom: '0.75rem', paddingLeft: '4px' }}>
                   Próximos 7 dias
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
                   {upcomingReviews.map(item => {
                     const reviewDate = new Date(item.reviewDate);
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
-                    const daysUntil = Math.ceil(
-                      (reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-                    );
+                    const daysUntil = Math.ceil((reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                     return (
                       <div
                         key={item.topicId}
-                        className="glass-card p-5 flex items-center justify-between border-indigo-500/10 bg-indigo-500/[0.03]"
+                        style={{
+                          background: 'rgba(129,140,248,0.05)',
+                          border: '1px solid rgba(129,140,248,0.15)',
+                          borderRadius: '16px', padding: '1rem 1.25rem',
+                          display: 'flex', flexDirection: 'column', gap: '3px',
+                        }}
                       >
-                        <div className="flex flex-col gap-1 min-w-0 flex-1">
-                          <span
-                            className="text-[10px] font-black uppercase tracking-[0.2em] truncate"
-                            style={{ color: item.subjectColor }}
-                          >
-                            {item.subjectName}
+                        <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: item.subjectColor, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.subjectName}
+                        </span>
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.topicName}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Calendar size={11} color="rgba(129,140,248,0.8)" />
+                          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(129,140,248,0.8)' }}>
+                            em {daysUntil} dia{daysUntil !== 1 ? 's' : ''}
                           </span>
-                          <h5 className="text-base font-black text-white tracking-tight truncate">{item.topicName}</h5>
-                          <div className="flex items-center gap-1 text-indigo-400/80">
-                            <Calendar size={12} />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">
-                              em {daysUntil} dia{daysUntil !== 1 ? 's' : ''}
-                            </span>
-                          </div>
                         </div>
                       </div>
                     );

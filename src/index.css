@@ -26,6 +26,11 @@
   box-sizing: border-box;
 }
 
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   font-family: 'Lexend', sans-serif;
   background: var(--bg-dark);
@@ -35,14 +40,11 @@ body {
   min-height: 100vh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 160px; /* Space for the fixed footer */
 }
 
 #root {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .glass-card {
@@ -234,6 +236,11 @@ button {
   }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Hide number input spinners */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
@@ -242,6 +249,17 @@ input[type='number']::-webkit-outer-spin-button {
 }
 input[type='number'] {
   -moz-appearance: textfield;
+}
+
+/* Style select dropdowns */
+select option {
+  background: #0f172a;
+  color: #fff;
+  padding: 0.5rem;
+}
+
+select {
+  color-scheme: dark;
 }
 
 /* Custom Scrollbar */

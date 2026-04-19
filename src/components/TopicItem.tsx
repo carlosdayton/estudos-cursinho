@@ -2,18 +2,20 @@ import { memo, useState } from 'react';
 import { CheckCircle2, Timer, X, NotebookPen, BookOpen, Dumbbell } from 'lucide-react';
 import type { Topic } from '../utils/studyLogic';
 import { isReviewDue } from '../utils/studyLogic';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useNavigation } from '../context/NavigationContext';
 
 interface Props {
   topic: Topic;
+  subjectId: string;
   onToggleStudied: () => void;
   onToggleExercises: () => void;
   onRemove: () => void;
   onUpdateNotes: (notes: string) => void;
 }
 
-function TopicItem({ topic, onToggleStudied, onToggleExercises, onRemove, onUpdateNotes }: Props) {
-  const [showNotes, setShowNotes] = useState(false);
+function TopicItem({ topic, subjectId, onToggleStudied, onToggleExercises, onRemove, onUpdateNotes }: Props) {
+  const { navigateTo } = useNavigation();
   const reviewDue = isReviewDue(topic.reviewDate);
   const completed = topic.isStudied && topic.isExercisesDone;
   const partial = topic.isStudied || topic.isExercisesDone;
@@ -69,16 +71,18 @@ function TopicItem({ topic, onToggleStudied, onToggleExercises, onRemove, onUpda
           {/* Notes + Remove */}
           <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
             <button
-              onClick={() => setShowNotes(!showNotes)}
-              aria-label={showNotes ? `Fechar anotações de ${topic.name}` : `Abrir anotações de ${topic.name}`}
-              aria-expanded={showNotes}
+              onClick={() => navigateTo('anotacoes', { title: topic.name, subjectId })}
+              aria-label={`Criar anotação para ${topic.name}`}
+              title="Anotar na aba Anotações"
               style={{
                 width: '28px', height: '28px', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: showNotes ? 'rgba(251,191,36,0.15)' : 'transparent',
-                color: showNotes ? '#fbbf24' : 'rgba(255,255,255,0.2)',
+                background: 'rgba(167,139,250,0.12)',
+                color: '#a78bfa',
                 transition: 'all 0.2s',
               }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(167,139,250,0.25)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(167,139,250,0.12)'; }}
             >
               <NotebookPen size={13} />
             </button>
@@ -149,42 +153,6 @@ function TopicItem({ topic, onToggleStudied, onToggleExercises, onRemove, onUpda
           style={{ height: '100%', background: progressColor, boxShadow: `0 0 8px ${progressColor}88` }}
         />
       </div>
-
-      {/* Notes textarea */}
-      <AnimatePresence>
-        {showNotes && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div style={{ padding: '0 1rem 0.875rem' }}>
-              <label htmlFor={`notes-${topic.id}`} style={{
-                position: 'absolute', width: '1px', height: '1px',
-                overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap',
-              }}>
-                Anotações para {topic.name}
-              </label>
-              <textarea
-                id={`notes-${topic.id}`}
-                value={topic.notes || ''}
-                onChange={e => onUpdateNotes(e.target.value)}
-                placeholder="Suas anotações aqui..."
-                rows={3}
-                style={{
-                  width: '100%', background: 'rgba(251,191,36,0.05)',
-                  border: '1px solid rgba(251,191,36,0.2)',
-                  borderRadius: '10px', padding: '0.625rem 0.875rem',
-                  color: '#fff', fontSize: '13px', fontFamily: 'Lexend, sans-serif',
-                  resize: 'none', outline: 'none', lineHeight: 1.5,
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }

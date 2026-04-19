@@ -217,6 +217,7 @@ function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
                 <TopicItem
                   key={topic.id}
                   topic={topic}
+                  subjectId={subject.id}
                   onToggleStudied={() => updateTopic(topic.id, { isStudied: !topic.isStudied })}
                   onToggleExercises={() => updateTopic(topic.id, { isExercisesDone: !topic.isExercisesDone })}
                   onRemove={() => removeTopic(topic.id)}
