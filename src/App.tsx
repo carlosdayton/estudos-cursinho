@@ -350,6 +350,7 @@ function TabContent({ tab }: { tab: TabId }) {
     case 'simulados':    return <SimuladosView />;
     case 'anotacoes':    return <NotesView />;
     case 'estatisticas': return <EstatisticasView />;
+    case 'ciclos':       return <CiclosView />;
     case 'planner':      return <PlannerView />;
     case 'flashcards':   return <FlashcardsView />;
     case 'redacao':      return <RedacaoView />;
