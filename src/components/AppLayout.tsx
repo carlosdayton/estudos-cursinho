@@ -163,59 +163,73 @@ export default function AppLayout({ activeTab, onTabChange, children, onSignOut,
         <div style={{ padding: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {/* User email */}
           {!collapsed && userEmail && (
-            <div style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.03)' }}>
-              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
+            <div style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <p style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.2)', margin: '0 0 1px' }}>Logado como</p>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
                 {userEmail}
               </p>
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {/* Logout button */}
-            {onSignOut && (
-              <button
-                onClick={onSignOut}
-                title="Sair da conta"
-                style={{
-                  flex: collapsed ? 1 : 'none',
-                  width: collapsed ? '100%' : '36px',
-                  height: '36px',
-                  border: 'none', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0.5rem',
-                  background: 'rgba(248,113,113,0.08)',
-                  borderRadius: '8px',
-                  color: 'rgba(248,113,113,0.6)',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.15)'; (e.currentTarget as HTMLButtonElement).style.color = '#f87171'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.08)'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(248,113,113,0.6)'; }}
-              >
-                <LogOut size={15} />
-              </button>
-            )}
-
-            {/* Collapse toggle */}
+          {/* Logout button */}
+          {onSignOut && (
             <button
-              onClick={() => setCollapsed(!collapsed)}
-              title={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+              onClick={onSignOut}
+              title="Sair da conta"
               style={{
-                flex: 1,
-                border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-end',
-                padding: '0.5rem',
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: '8px',
-                color: 'rgba(255,255,255,0.3)',
+                width: '100%',
+                height: '38px',
+                border: '1px solid rgba(248,113,113,0.2)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                gap: '8px',
+                padding: collapsed ? '0' : '0 0.75rem',
+                background: 'rgba(248,113,113,0.06)',
+                borderRadius: '10px',
+                color: 'rgba(248,113,113,0.7)',
                 transition: 'all 0.2s',
-                height: '36px',
+                fontFamily: 'Lexend, sans-serif',
+                fontSize: '12px',
+                fontWeight: 700,
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.7)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.3)'; }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.15)';
+                (e.currentTarget as HTMLButtonElement).style.color = '#f87171';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(248,113,113,0.4)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(248,113,113,0.06)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'rgba(248,113,113,0.7)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(248,113,113,0.2)';
+              }}
             >
-              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+              <LogOut size={15} />
+              {!collapsed && <span>Sair da conta</span>}
             </button>
-          </div>
+          )}
+
+          {/* Collapse toggle */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+            style={{
+              width: '100%',
+              border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-end',
+              padding: '0.5rem',
+              background: 'rgba(255,255,255,0.04)',
+              borderRadius: '8px',
+              color: 'rgba(255,255,255,0.3)',
+              transition: 'all 0.2s',
+              height: '32px',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.7)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.3)'; }}
+          >
+            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
       </aside>
 
