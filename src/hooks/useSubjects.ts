@@ -108,10 +108,17 @@ export function useSubjects(): UseSubjectsReturn {
       user_id: user.id,
       name: name.trim(),
       color: SUBJECT_COLORS[Math.floor(Math.random() * SUBJECT_COLORS.length)],
-      topics: [],
     }).select().single();
     if (data) {
-      setSubjects(prev => [...prev, { ...data, topics: [] } as unknown as Subject]);
+      setSubjects(prev => [...prev, {
+        id: data.id,
+        name: data.name,
+        color: data.color,
+        icon: data.icon ?? undefined,
+        order: data.order ?? undefined,
+        targetTopics: data.target_topics ?? undefined,
+        topics: [],
+      }]);
     }
   }, [user]);
 
