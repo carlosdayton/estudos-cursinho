@@ -285,7 +285,7 @@ function RedacaoEditor({ initial, onSave, onClose }: EditorProps) {
   };
 
   return (
-    <div style={{ padding: '3rem 3.5rem 8rem', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ padding: 'clamp(1rem, 4vw, 3rem) clamp(1rem, 5vw, 3.5rem) clamp(4rem, 10vw, 8rem)', width: '100%', boxSizing: 'border-box' }}>
       {/* Back */}
       <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 700, fontFamily: 'Lexend, sans-serif', cursor: 'pointer', marginBottom: '1.5rem', padding: 0 }}>
         <ChevronLeft size={16} /> Voltar
@@ -540,7 +540,7 @@ export default function RedacaoView() {
   }
 
   return (
-    <div style={{ padding: '3rem 3.5rem 8rem', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ padding: 'clamp(1rem, 4vw, 3rem) clamp(1rem, 5vw, 3.5rem) clamp(4rem, 10vw, 8rem)', width: '100%', boxSizing: 'border-box' }}>
       <ConfirmModal
         isOpen={!!confirmDelete}
         message="Excluir esta redação? Esta ação não pode ser desfeita."

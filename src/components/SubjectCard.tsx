@@ -72,23 +72,23 @@ function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
       }} />
 
       {/* Header */}
-      <div style={{ padding: '1.75rem 1.75rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div style={{ padding: 'clamp(1rem, 3vw, 1.75rem) clamp(1rem, 3vw, 1.75rem) clamp(0.75rem, 2vw, 1.25rem)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
         {/* Icon + name row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{
-            width: '52px', height: '52px', borderRadius: '16px', flexShrink: 0,
+            width: 'clamp(40px, 10vw, 52px)', height: 'clamp(40px, 10vw, 52px)', borderRadius: 'clamp(12px, 3vw, 16px)', flexShrink: 0,
             background: `${subject.color}18`,
             border: `1.5px solid ${subject.color}44`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: subject.color,
             boxShadow: `0 0 20px ${subject.color}22`,
           }}>
-            <GraduationCap size={26} strokeWidth={2} />
+            <GraduationCap size={22} strokeWidth={2} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={{
-              fontSize: '1.25rem', fontWeight: 900, color: '#fff',
+              fontSize: 'clamp(0.95rem, 4vw, 1.25rem)', fontWeight: 900, color: '#fff',
               letterSpacing: '-0.02em', lineHeight: 1.2,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
@@ -168,7 +168,7 @@ function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
             style={{ overflow: 'hidden' }}
           >
             {/* Add topic input */}
-            <div style={{ padding: '0 1.75rem 1.25rem', display: 'flex', gap: '0.75rem' }}>
+            <div style={{ padding: '0 clamp(1rem, 3vw, 1.75rem) clamp(0.75rem, 2vw, 1.25rem)', display: 'flex', gap: '0.75rem' }}>
               <label htmlFor={`new-topic-${subject.id}`} style={{
                 position: 'absolute', width: '1px', height: '1px',
                 overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap',
@@ -209,7 +209,7 @@ function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
 
             {/* Topics list */}
             <div style={{
-              padding: '0 1.75rem 1.75rem',
+              padding: '0 clamp(1rem, 3vw, 1.75rem) clamp(1rem, 3vw, 1.75rem)',
               display: 'flex', flexDirection: 'column', gap: '0.75rem',
               maxHeight: '600px', overflowY: 'auto',
             }}>

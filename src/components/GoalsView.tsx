@@ -258,7 +258,7 @@ export default function GoalsView() {
   ];
 
   return (
-    <div style={{ padding: '3rem 3.5rem 8rem', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ padding: 'clamp(1rem, 4vw, 3rem) clamp(1rem, 5vw, 3.5rem) clamp(4rem, 10vw, 8rem)', width: '100%', boxSizing: 'border-box' }}>
       <Confetti active={confetti} />
 
       {/* Header */}
@@ -323,7 +323,7 @@ export default function GoalsView() {
           </div>
         </motion.div>
       ) : (
-        <motion.div layout style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <motion.div layout style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem' }}>
           <AnimatePresence>
             {currentWeekGoals.map(goal => {
               const typeInfo = GOAL_TYPES.find(t => t.value === goal.type)!;

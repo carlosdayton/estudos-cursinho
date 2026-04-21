@@ -34,7 +34,7 @@ const StudyCyclesPanel = lazy(() => import('./components/StudyCyclesPanel'));
 
 const SimuladosTracker = lazy(() => import('./components/SimuladosTracker'));
 
-const PAGE_PADDING: React.CSSProperties = { padding: '3rem 3.5rem 8rem', width: '100%', boxSizing: 'border-box' };
+const PAGE_PADDING: React.CSSProperties = { padding: 'clamp(1rem, 4vw, 3rem) clamp(1rem, 5vw, 3.5rem) clamp(4rem, 10vw, 8rem)', width: '100%', boxSizing: 'border-box' };
 
 function SectionSkeleton() {
   return (

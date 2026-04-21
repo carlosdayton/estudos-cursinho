@@ -238,14 +238,14 @@ export default function QuestoesView() {
 
   if (practicing && practicePool.length > 0) {
     return (
-      <div style={{ padding: '3rem 3.5rem 8rem', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ padding: 'clamp(1rem, 4vw, 3rem) clamp(1rem, 5vw, 3.5rem) clamp(4rem, 10vw, 8rem)', width: '100%', boxSizing: 'border-box' }}>
         <PracticeMode questions={practicePool} onRecord={recordAttempt} onExit={() => setPracticing(false)} />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '3rem 3.5rem 8rem', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ padding: 'clamp(1rem, 4vw, 3rem) clamp(1rem, 5vw, 3.5rem) clamp(4rem, 10vw, 8rem)', width: '100%', boxSizing: 'border-box' }}>
       <ConfirmModal
         isOpen={!!confirmDelete}
         message="Excluir esta questão?"

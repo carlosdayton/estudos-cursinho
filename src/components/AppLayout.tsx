@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, BookOpen, Timer, RefreshCw,
   BarChart3, GraduationCap, ChevronLeft, ChevronRight,
   Layers, Calendar, Zap, NotebookPen,
-  PenLine, Target, BarChart2, CalendarClock, HelpCircle, LogOut
+  PenLine, Target, BarChart2, CalendarClock, HelpCircle, LogOut,
+  Menu, X
 } from 'lucide-react';
 
 export type TabId =
@@ -58,8 +59,21 @@ interface AppLayoutProps {
 
 export default function AppLayout({ activeTab, onTabChange, children, onSignOut, userEmail }: AppLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobile, setMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const sidebarWidth = collapsed ? '72px' : '220px';
+  useEffect(() => {
+    const check = () => {
+      const isMobile = window.innerWidth < 768;
+      setMobile(isMobile);
+      if (isMobile) setCollapsed(true);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const sidebarWidth = mobile ? (mobileMenuOpen ? '220px' : '0px') : (collapsed ? '72px' : '220px');
 
   return (
     <div style={{
@@ -68,24 +82,65 @@ export default function AppLayout({ activeTab, onTabChange, children, onSignOut,
       minHeight: '100vh',
       background: 'var(--bg-dark)',
       overflow: 'hidden',
+      position: 'relative',
     }}>
+      {/* Mobile hamburger button */}
+      {mobile && (
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{
+            position: 'fixed',
+            top: '12px',
+            left: '12px',
+            zIndex: 200,
+            width: '40px',
+            height: '40px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'rgba(10,15,30,0.9)',
+            backdropFilter: 'blur(12px)',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      )}
+
+      {/* Mobile overlay */}
+      {mobile && mobileMenuOpen && (
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 99,
+          }}
+        />
+      )}
+
       {/* Sidebar */}
       <aside style={{
         width: sidebarWidth,
         minWidth: sidebarWidth,
         height: '100vh',
-        position: 'sticky',
+        position: mobile ? 'fixed' : 'sticky',
         top: 0,
-        background: 'rgba(10,15,30,0.85)',
+        left: 0,
+        background: 'rgba(10,15,30,0.95)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
-        borderRight: '1px solid rgba(255,255,255,0.07)',
+        borderRight: mobile ? 'none' : '1px solid rgba(255,255,255,0.07)',
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1), min-width 0.3s cubic-bezier(0.4,0,0.2,1)',
         overflow: 'hidden',
         zIndex: 100,
-        paddingBottom: '64px', // compensate for fixed footer height
+        paddingBottom: '64px',
       }}>
         {/* Logo */}
         <div style={{
@@ -120,7 +175,10 @@ export default function AppLayout({ activeTab, onTabChange, children, onSignOut,
             return (
               <button
                 key={item.id}
-                onClick={() => onTabChange(item.id)}
+                onClick={() => {
+                  onTabChange(item.id);
+                  if (mobile) setMobileMenuOpen(false);
+                }}
                 title={collapsed ? item.label : undefined}
                 style={{
                   width: '100%', border: 'none', cursor: 'pointer',
@@ -245,7 +303,8 @@ export default function AppLayout({ activeTab, onTabChange, children, onSignOut,
         overflowX: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        paddingBottom: '64px', // compensate for fixed footer
+        paddingBottom: '64px',
+        paddingTop: mobile ? '60px' : '0px',
       }}>
         <AnimatePresence mode="wait">
           <motion.div
