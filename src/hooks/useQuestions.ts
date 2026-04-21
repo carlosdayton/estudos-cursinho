@@ -103,7 +103,7 @@ export function useQuestions(): UseQuestionsReturn {
       subject_id: data.subjectId,
       subject_name: data.subjectName,
       year: data.year ?? null,
-    }).select().single();
+    }).select('*').single();
     if (created) setQuestions(prev => [toQuestion(created as DbQuestion), ...prev]);
   }, [user]);
 
@@ -121,7 +121,7 @@ export function useQuestions(): UseQuestionsReturn {
       user_id: user.id,
       question_id: questionId,
       correct,
-    }).select().single();
+    }).select('*').single();
     if (created) setAttempts(prev => [...prev, toAttempt(created as DbAttempt)]);
   }, [user]);
 

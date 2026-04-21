@@ -80,7 +80,7 @@ export function useSupabaseQuery<T extends { id: string; user_id: string }>(
       const { data: created, error: err } = await supabase
         .from(table)
         .insert({ ...item, user_id: user.id })
-        .select()
+        .select('*')
         .single();
 
       if (err) {

@@ -108,7 +108,7 @@ export function useSubjects(): UseSubjectsReturn {
       user_id: user.id,
       name: name.trim(),
       color: SUBJECT_COLORS[Math.floor(Math.random() * SUBJECT_COLORS.length)],
-    }).select().single();
+    }).select('*').single();
     if (data) {
       setSubjects(prev => [...prev, {
         id: data.id,

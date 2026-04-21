@@ -80,7 +80,7 @@ export function useFlashcards(validSubjectIds: string[] = []) {
         interval_days: 1,
         ease_factor: 2.5,
         repetitions: 0,
-      }).select().single();
+      }).select('*').single();
 
       if (data) {
         setCards(prev => [...prev, toFlashcard(data as DbFlashcard)]);
@@ -101,7 +101,7 @@ export function useFlashcards(validSubjectIds: string[] = []) {
         interval_days: updates.interval,
         ease_factor: updates.easeFactor,
         repetitions: updates.repetitions,
-      }).eq('id', id).eq('user_id', user.id).select().single();
+      }).eq('id', id).eq('user_id', user.id).select('*').single();
 
       if (data) {
         setCards(prev =>
@@ -143,7 +143,7 @@ export function useFlashcards(validSubjectIds: string[] = []) {
         front: patch.front.trim(),
         back: patch.back.trim(),
         topic_id: patch.topicId ?? null,
-      }).eq('id', id).eq('user_id', user.id).select().single();
+      }).eq('id', id).eq('user_id', user.id).select('*').single();
 
       if (data) {
         setCards(prev =>
