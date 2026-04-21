@@ -1,72 +1,74 @@
-import { useCallback } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useCallback, useMemo } from 'react';
+import { useSupabaseQuery } from './useSupabaseQuery';
 import type { StudyCycle } from '../utils/studyLogic';
 
-function generateId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-function parseCycles(raw: unknown): StudyCycle[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.filter(
-    (c): c is StudyCycle =>
-      c !== null &&
-      typeof c === 'object' &&
-      typeof (c as StudyCycle).id === 'string' &&
-      typeof (c as StudyCycle).name === 'string' &&
-      Array.isArray((c as StudyCycle).subjectIds)
-  );
+interface DbStudyCycle {
+  id: string;
+  user_id: string;
+  name: string;
+  subject_ids: string[];
+  pomodoros_per_subject: number;
+  loop: boolean;
+  created_at: string;
 }
 
 export interface UseStudyCyclesReturn {
   cycles: StudyCycle[];
-  saveCycle: (cycle: Omit<StudyCycle, 'id' | 'createdAt'> & { id?: string }) => StudyCycle;
-  deleteCycle: (id: string) => void;
+  loading: boolean;
+  saveCycle: (cycle: Omit<StudyCycle, 'id' | 'createdAt'> & { id?: string }) => Promise<StudyCycle | null>;
+  deleteCycle: (id: string) => Promise<void>;
   getCycleById: (id: string) => StudyCycle | undefined;
 }
 
+function toCycle(db: DbStudyCycle): StudyCycle {
+  return {
+    id: db.id,
+    name: db.name,
+    subjectIds: db.subject_ids,
+    pomodorosPerSubject: db.pomodoros_per_subject,
+    loop: db.loop,
+    createdAt: db.created_at,
+  };
+}
+
 export function useStudyCycles(): UseStudyCyclesReturn {
-  const [rawCycles, setRawCycles] = useLocalStorage<unknown>('study-cycles', []);
-  const cycles = parseCycles(rawCycles);
+  const { data, loading, insert, update, remove } = useSupabaseQuery<DbStudyCycle>(
+    'study_cycles',
+    [],
+    { orderBy: { column: 'created_at', ascending: true } }
+  );
+
+  const cycles = useMemo(() => data.map(toCycle), [data]);
 
   const saveCycle = useCallback(
-    (input: Omit<StudyCycle, 'id' | 'createdAt'> & { id?: string }): StudyCycle => {
-      const existing = parseCycles(rawCycles);
+    async (input: Omit<StudyCycle, 'id' | 'createdAt'> & { id?: string }): Promise<StudyCycle | null> => {
       if (input.id) {
-        // Update existing
-        const updated = existing.map((c) =>
-          c.id === input.id
-            ? { ...c, ...input, id: input.id! }
-            : c
-        );
-        setRawCycles(updated);
-        return updated.find((c) => c.id === input.id)!;
-      } else {
-        // Create new
-        const newCycle: StudyCycle = {
-          id: generateId(),
+        await update(input.id, {
           name: input.name,
-          subjectIds: input.subjectIds,
+          subject_ids: input.subjectIds,
+          loop: input.loop,
+          pomodoros_per_subject: input.pomodorosPerSubject,
+        } as Partial<DbStudyCycle>);
+        return cycles.find(c => c.id === input.id) ?? null;
+      } else {
+        const created = await insert({
+          name: input.name,
+          subject_ids: input.subjectIds,
           loop: input.loop ?? false,
-          pomodorosPerSubject: input.pomodorosPerSubject ?? 1,
-          createdAt: new Date().toISOString(),
-        };
-        setRawCycles([...existing, newCycle]);
-        return newCycle;
+          pomodoros_per_subject: input.pomodorosPerSubject ?? 1,
+          created_at: new Date().toISOString(),
+        } as Omit<DbStudyCycle, 'id' | 'created_at' | 'updated_at' | 'user_id'>);
+        return created ? toCycle(created) : null;
       }
     },
-    [rawCycles, setRawCycles]
+    [insert, update, cycles]
   );
 
   const deleteCycle = useCallback(
-    (id: string) => {
-      const existing = parseCycles(rawCycles);
-      setRawCycles(existing.filter((c) => c.id !== id));
+    async (id: string) => {
+      await remove(id);
     },
-    [rawCycles, setRawCycles]
+    [remove]
   );
 
   const getCycleById = useCallback(
@@ -74,5 +76,5 @@ export function useStudyCycles(): UseStudyCyclesReturn {
     [cycles]
   );
 
-  return { cycles, saveCycle, deleteCycle, getCycleById };
+  return { cycles, loading, saveCycle, deleteCycle, getCycleById };
 }

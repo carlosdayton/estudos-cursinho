@@ -324,8 +324,8 @@ describe('StudyGoal round-trip', () => {
     fc.assert(
       fc.property(
         fc.record({
-          targetDate: fc.date({ min: new Date('2025-01-01'), max: new Date('2030-12-31') })
-            .map(d => d.toISOString().substring(0, 10)),
+          targetDate: fc.integer({ min: new Date('2025-01-01').getTime(), max: new Date('2030-12-31').getTime() })
+            .map(ts => new Date(ts).toISOString().substring(0, 10)),
           dailyHours: fc.array(fc.integer({ min: 0, max: 12 }), { minLength: 7, maxLength: 7 }),
         }),
         (goal: StudyGoal) => {

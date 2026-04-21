@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useSupabaseQuery } from './useSupabaseQuery';
 
 export type NoteTag = 'importante' | 'dúvida' | 'resumo' | 'fórmula' | 'dica';
 
@@ -7,19 +7,32 @@ export interface Note {
   id: string;
   title: string;
   content: string;
-  subjectId: string | null;   // null = nota geral
+  subjectId: string | null;
   tags: NoteTag[];
   pinned: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
+interface DbNote {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  subject_id: string | null;
+  tags: string[];
+  pinned: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface UseNotesReturn {
   notes: Note[];
-  addNote: (data: Pick<Note, 'title' | 'content' | 'subjectId' | 'tags'>) => Note;
-  updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'subjectId' | 'tags' | 'pinned'>>) => void;
-  deleteNote: (id: string) => void;
-  togglePin: (id: string) => void;
+  loading: boolean;
+  addNote: (data: Pick<Note, 'title' | 'content' | 'subjectId' | 'tags'>) => Promise<Note | null>;
+  updateNote: (id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'subjectId' | 'tags' | 'pinned'>>) => Promise<void>;
+  deleteNote: (id: string) => Promise<void>;
+  togglePin: (id: string) => Promise<void>;
   getNotesBySubject: (subjectId: string | null) => Note[];
   searchNotes: (query: string) => Note[];
   totalNotes: number;
@@ -33,40 +46,62 @@ export const NOTE_TAGS: { id: NoteTag; label: string; color: string }[] = [
   { id: 'dica',       label: 'Dica',       color: '#60a5fa' },
 ];
 
-export function useNotes(): UseNotesReturn {
-  const [notes, setNotes] = useLocalStorage<Note[]>('enem-notes', []);
+function toNote(db: DbNote): Note {
+  return {
+    id: db.id,
+    title: db.title,
+    content: db.content,
+    subjectId: db.subject_id,
+    tags: db.tags as NoteTag[],
+    pinned: db.pinned,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
 
-  const addNote = useCallback((data: Pick<Note, 'title' | 'content' | 'subjectId' | 'tags'>): Note => {
+export function useNotes(): UseNotesReturn {
+  const { data, loading, insert, update, remove } = useSupabaseQuery<DbNote>(
+    'notes',
+    [],
+    { orderBy: { column: 'pinned', ascending: false } }
+  );
+
+  const notes = useMemo(() => data.map(toNote), [data]);
+
+  const addNote = useCallback(async (data: Pick<Note, 'title' | 'content' | 'subjectId' | 'tags'>): Promise<Note | null> => {
     const now = new Date().toISOString();
-    const note: Note = {
-      id: Math.random().toString(36).slice(2, 11),
+    const created = await insert({
       title: data.title.trim() || 'Sem título',
       content: data.content,
-      subjectId: data.subjectId,
+      subject_id: data.subjectId,
       tags: data.tags,
       pinned: false,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setNotes(prev => [note, ...prev]);
-    return note;
-  }, [setNotes]);
+      created_at: now,
+      updated_at: now,
+    } as Omit<DbNote, 'id' | 'created_at' | 'updated_at' | 'user_id'>);
+    return created ? toNote(created) : null;
+  }, [insert]);
 
-  const updateNote = useCallback((id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'subjectId' | 'tags' | 'pinned'>>) => {
-    setNotes(prev => prev.map(n =>
-      n.id === id ? { ...n, ...patch, updatedAt: new Date().toISOString() } : n
-    ));
-  }, [setNotes]);
+  const updateNote = useCallback(async (id: string, patch: Partial<Pick<Note, 'title' | 'content' | 'subjectId' | 'tags' | 'pinned'>>) => {
+    await update(id, {
+      ...patch,
+      subject_id: patch.subjectId,
+      updated_at: new Date().toISOString(),
+    } as Partial<DbNote>);
+  }, [update]);
 
-  const deleteNote = useCallback((id: string) => {
-    setNotes(prev => prev.filter(n => n.id !== id));
-  }, [setNotes]);
+  const deleteNote = useCallback(async (id: string) => {
+    await remove(id);
+  }, [remove]);
 
-  const togglePin = useCallback((id: string) => {
-    setNotes(prev => prev.map(n =>
-      n.id === id ? { ...n, pinned: !n.pinned, updatedAt: new Date().toISOString() } : n
-    ));
-  }, [setNotes]);
+  const togglePin = useCallback(async (id: string) => {
+    const note = notes.find(n => n.id === id);
+    if (!note) return;
+    await update(id, {
+      pinned: !note.pinned,
+      updated_at: new Date().toISOString(),
+    } as Partial<DbNote>);
+  }, [notes, update]);
 
   const getNotesBySubject = useCallback((subjectId: string | null) => {
     return notes.filter(n => n.subjectId === subjectId);
@@ -84,5 +119,5 @@ export function useNotes(): UseNotesReturn {
 
   const totalNotes = useMemo(() => notes.length, [notes]);
 
-  return { notes, addNote, updateNote, deleteNote, togglePin, getNotesBySubject, searchNotes, totalNotes };
+  return { notes, loading, addNote, updateNote, deleteNote, togglePin, getNotesBySubject, searchNotes, totalNotes };
 }

@@ -32,16 +32,16 @@ export default function FlashcardsPanel({ subjects }: FlashcardsPanelProps) {
   const [view, setView] = useState<View>('list');
   const [editingCard, setEditingCard] = useState<Flashcard | undefined>(undefined);
 
-  function handleSave(draft: FlashcardDraft): string | null {
+  async function handleSave(draft: FlashcardDraft): Promise<string | null> {
     if (editingCard) {
-      const err = updateFlashcard(editingCard.id, {
+      const err = await updateFlashcard(editingCard.id, {
         front: draft.front,
         back: draft.back,
         topicId: draft.topicId,
       });
       if (err) return err;
     } else {
-      const err = addFlashcard(draft);
+      const err = await addFlashcard(draft);
       if (err) return err;
     }
     setEditingCard(undefined);

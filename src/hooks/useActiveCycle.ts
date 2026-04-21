@@ -1,40 +1,93 @@
-import { useCallback } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useCallback, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import { advanceCycleState } from '../utils/cycleLogic';
 import type { StudyCycle, ActiveCycleState } from '../utils/studyLogic';
 
-function parseState(raw: unknown): ActiveCycleState | null {
-  if (
-    raw !== null &&
-    typeof raw === 'object' &&
-    typeof (raw as ActiveCycleState).cycleId === 'string' &&
-    typeof (raw as ActiveCycleState).currentIndex === 'number' &&
-    typeof (raw as ActiveCycleState).isCompleted === 'boolean'
-  ) {
-    const s = raw as ActiveCycleState;
-    // Garantir campo novo com fallback para dados antigos
-    return { ...s, pomodorosInCurrentSubject: s.pomodorosInCurrentSubject ?? 0 };
-  }
-  return null;
+interface DbActiveCycle {
+  id: string;
+  user_id: string;
+  cycle_id: string;
+  current_index: number;
+  pomodoros_in_current_subject: number;
+  is_completed: boolean;
+  started_at: string;
+  updated_at: string;
+}
+
+function toActiveState(db: DbActiveCycle): ActiveCycleState {
+  return {
+    cycleId: db.cycle_id,
+    currentIndex: db.current_index,
+    pomodorosInCurrentSubject: db.pomodoros_in_current_subject,
+    isCompleted: db.is_completed,
+    startedAt: db.started_at,
+  };
 }
 
 export interface UseActiveCycleReturn {
   activeCycleState: ActiveCycleState | null;
-  startCycle: (cycle: StudyCycle) => void;
-  advanceToNextSubject: (cycle: StudyCycle) => {
+  loading: boolean;
+  startCycle: (cycle: StudyCycle) => Promise<void>;
+  advanceToNextSubject: (cycle: StudyCycle) => Promise<{
     nextSubjectId: string | null;
     isCompleted: boolean;
     subjectChanged: boolean;
-  };
-  clearCycle: () => void;
+  }>;
+  clearCycle: () => Promise<void>;
 }
 
 export function useActiveCycle(): UseActiveCycleReturn {
-  const [rawState, setRawState] = useLocalStorage<unknown>('active-cycle-state', null);
-  const activeCycleState = parseState(rawState);
+  const { user } = useAuth();
+  const [activeCycleState, setActiveCycleState] = useState<ActiveCycleState | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchState = useCallback(async () => {
+    if (!user) { setLoading(false); return; }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('active_cycle_states')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!error && data) {
+      setActiveCycleState(toActiveState(data as DbActiveCycle));
+    } else {
+      setActiveCycleState(null);
+    }
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    fetchState();
+  }, [fetchState]);
+
+  const saveState = useCallback(async (state: ActiveCycleState | null) => {
+    if (!user) return;
+    if (state === null) {
+      await supabase.from('active_cycle_states').delete().eq('user_id', user.id);
+      setActiveCycleState(null);
+      return;
+    }
+    const { data, error } = await supabase
+      .from('active_cycle_states')
+      .upsert({
+        user_id: user.id,
+        cycle_id: state.cycleId,
+        current_index: state.currentIndex,
+        pomodoros_in_current_subject: state.pomodorosInCurrentSubject,
+        is_completed: state.isCompleted,
+        started_at: state.startedAt,
+      }, { onConflict: 'user_id' })
+      .select()
+      .single();
+    if (!error && data) {
+      setActiveCycleState(toActiveState(data as DbActiveCycle));
+    }
+  }, [user]);
 
   const startCycle = useCallback(
-    (cycle: StudyCycle) => {
+    async (cycle: StudyCycle) => {
       const state: ActiveCycleState = {
         cycleId: cycle.id,
         currentIndex: 0,
@@ -42,30 +95,28 @@ export function useActiveCycle(): UseActiveCycleReturn {
         isCompleted: false,
         startedAt: new Date().toISOString(),
       };
-      setRawState(state);
+      await saveState(state);
     },
-    [setRawState]
+    [saveState]
   );
 
   const advanceToNextSubject = useCallback(
-    (cycle: StudyCycle): { nextSubjectId: string | null; isCompleted: boolean; subjectChanged: boolean } => {
-      const current = parseState(rawState);
-      if (!current) return { nextSubjectId: null, isCompleted: false, subjectChanged: false };
-
-      const result = advanceCycleState(current, cycle);
-      setRawState(result.nextState);
+    async (cycle: StudyCycle): Promise<{ nextSubjectId: string | null; isCompleted: boolean; subjectChanged: boolean }> => {
+      if (!activeCycleState) return { nextSubjectId: null, isCompleted: false, subjectChanged: false };
+      const result = advanceCycleState(activeCycleState, cycle);
+      await saveState(result.nextState);
       return {
         nextSubjectId: result.nextSubjectId,
         isCompleted: result.isCompleted,
         subjectChanged: result.subjectChanged,
       };
     },
-    [rawState, setRawState]
+    [activeCycleState, saveState]
   );
 
-  const clearCycle = useCallback(() => {
-    setRawState(null);
-  }, [setRawState]);
+  const clearCycle = useCallback(async () => {
+    await saveState(null);
+  }, [saveState]);
 
-  return { activeCycleState, startCycle, advanceToNextSubject, clearCycle };
+  return { activeCycleState, loading, startCycle, advanceToNextSubject, clearCycle };
 }

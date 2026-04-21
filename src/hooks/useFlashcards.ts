@@ -1,86 +1,134 @@
-import { useMemo, useCallback } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import type { FlashcardDraft, FlashcardsState, ReviewResult } from '../utils/flashcardLogic';
+import { useMemo, useCallback, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+import type { Flashcard, FlashcardDraft, ReviewResult } from '../utils/flashcardLogic';
 import {
   computeNextReview,
-  createFlashcard,
   getDueCards,
   validateDraft,
 } from '../utils/flashcardLogic';
 
-const STORAGE_KEY = 'flashcards-data';
-const INITIAL_STATE: FlashcardsState = { cards: [] };
+interface DbFlashcard {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  topic_id: string | null;
+  front: string;
+  back: string;
+  next_review: string;
+  interval_days: number;
+  ease_factor: number;
+  repetitions: number;
+  created_at: string;
+  updated_at: string;
+}
 
-/**
- * Hook principal do módulo de Flashcards.
- * Gerencia o estado global dos cards e expõe operações CRUD + revisão.
- */
+function toFlashcard(db: DbFlashcard): Flashcard {
+  return {
+    id: db.id,
+    front: db.front,
+    back: db.back,
+    subjectId: db.subject_id,
+    topicId: db.topic_id ?? undefined,
+    createdAt: db.created_at,
+    nextReviewAt: db.next_review,
+    easeFactor: db.ease_factor,
+    interval: db.interval_days,
+    repetitions: db.repetitions,
+  };
+}
+
 export function useFlashcards(validSubjectIds: string[] = []) {
-  const [state, setState] = useLocalStorage<FlashcardsState>(
-    STORAGE_KEY,
-    INITIAL_STATE
-  );
+  const { user } = useAuth();
+  const [cards, setCards] = useState<Flashcard[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const cards = state.cards;
+  const fetchCards = useCallback(async () => {
+    if (!user) { setLoading(false); return; }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+    if (!error && data) {
+      setCards((data as DbFlashcard[]).map(toFlashcard));
+    }
+    setLoading(false);
+  }, [user]);
 
-  /** Cards pendentes de revisão, ordenados por urgência (memoizado). */
+  useEffect(() => {
+    fetchCards();
+  }, [fetchCards]);
+
   const dueCards = useMemo(() => getDueCards(cards), [cards]);
 
-  /**
-   * Adiciona um novo flashcard ao estado.
-   * Retorna null em caso de sucesso, ou uma mensagem de erro se inválido.
-   */
   const addFlashcard = useCallback(
-    (draft: FlashcardDraft): string | null => {
+    async (draft: FlashcardDraft): Promise<string | null> => {
       const error = validateDraft(draft, validSubjectIds);
       if (error) return error;
+      if (!user) return 'Usuário não autenticado.';
 
-      const newCard = createFlashcard(draft);
-      setState(prev => ({ cards: [...prev.cards, newCard] }));
+      const now = new Date().toISOString();
+      const { data } = await supabase.from('flashcards').insert({
+        user_id: user.id,
+        subject_id: draft.subjectId,
+        topic_id: draft.topicId ?? null,
+        front: draft.front.trim(),
+        back: draft.back.trim(),
+        next_review: now,
+        interval_days: 1,
+        ease_factor: 2.5,
+        repetitions: 0,
+      }).select().single();
+
+      if (data) {
+        setCards(prev => [...prev, toFlashcard(data as DbFlashcard)]);
+      }
       return null;
     },
-    [setState, validSubjectIds]
+    [user, validSubjectIds]
   );
 
-  /**
-   * Registra o resultado de uma revisão e recalcula o próximo agendamento.
-   */
   const recordResult = useCallback(
-    (id: string, result: ReviewResult): void => {
-      setState(prev => ({
-        cards: prev.cards.map(card =>
-          card.id === id
-            ? { ...card, ...computeNextReview(card, result) }
-            : card
-        ),
-      }));
+    async (id: string, result: ReviewResult): Promise<void> => {
+      const card = cards.find(c => c.id === id);
+      if (!card || !user) return;
+
+      const updates = computeNextReview(card, result);
+      const { data } = await supabase.from('flashcards').update({
+        next_review: updates.nextReviewAt,
+        interval_days: updates.interval,
+        ease_factor: updates.easeFactor,
+        repetitions: updates.repetitions,
+      }).eq('id', id).eq('user_id', user.id).select().single();
+
+      if (data) {
+        setCards(prev =>
+          prev.map(c => (c.id === id ? { ...c, ...updates } : c))
+        );
+      }
     },
-    [setState]
+    [cards, user]
   );
 
-  /**
-   * Remove um flashcard pelo id. Idempotente para ids inexistentes.
-   */
   const deleteFlashcard = useCallback(
-    (id: string): void => {
-      setState(prev => ({
-        cards: prev.cards.filter(card => card.id !== id),
-      }));
+    async (id: string): Promise<void> => {
+      if (!user) return;
+      await supabase.from('flashcards').delete().eq('id', id).eq('user_id', user.id);
+      setCards(prev => prev.filter(card => card.id !== id));
     },
-    [setState]
+    [user]
   );
 
-  /**
-   * Atualiza front/back de um flashcard existente, preservando o estado de revisão.
-   * Retorna null em caso de sucesso, ou uma mensagem de erro se inválido.
-   */
   const updateFlashcard = useCallback(
-    (
+    async (
       id: string,
       patch: Pick<FlashcardDraft, 'front' | 'back'> & { topicId?: string }
-    ): string | null => {
+    ): Promise<string | null> => {
       const card = cards.find(c => c.id === id);
       if (!card) return 'Flashcard não encontrado.';
+      if (!user) return 'Usuário não autenticado.';
 
       const draftForValidation: FlashcardDraft = {
         front: patch.front,
@@ -91,26 +139,30 @@ export function useFlashcards(validSubjectIds: string[] = []) {
       const error = validateDraft(draftForValidation, validSubjectIds);
       if (error) return error;
 
-      setState(prev => ({
-        cards: prev.cards.map(c =>
-          c.id === id
-            ? {
-                ...c,
-                front: patch.front.trim(),
-                back: patch.back.trim(),
-                topicId: patch.topicId,
-              }
-            : c
-        ),
-      }));
+      const { data } = await supabase.from('flashcards').update({
+        front: patch.front.trim(),
+        back: patch.back.trim(),
+        topic_id: patch.topicId ?? null,
+      }).eq('id', id).eq('user_id', user.id).select().single();
+
+      if (data) {
+        setCards(prev =>
+          prev.map(c =>
+            c.id === id
+              ? { ...c, front: patch.front.trim(), back: patch.back.trim(), topicId: patch.topicId }
+              : c
+          )
+        );
+      }
       return null;
     },
-    [cards, setState, validSubjectIds]
+    [cards, user, validSubjectIds]
   );
 
   return {
     cards,
     dueCards,
+    loading,
     addFlashcard,
     recordResult,
     deleteFlashcard,

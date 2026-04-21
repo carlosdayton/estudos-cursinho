@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useCallback, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 export interface Question {
   id: string;
@@ -18,36 +19,111 @@ export interface QuestionAttempt {
   answeredAt: string;
 }
 
+interface DbQuestion {
+  id: string;
+  user_id: string;
+  statement: string;
+  alternatives: Record<string, string>;
+  answer: string;
+  subject_id: string | null;
+  subject_name: string | null;
+  year: number | null;
+  created_at: string;
+}
+
+interface DbAttempt {
+  id: string;
+  user_id: string;
+  question_id: string;
+  correct: boolean;
+  answered_at: string;
+}
+
+function toQuestion(db: DbQuestion): Question {
+  return {
+    id: db.id,
+    statement: db.statement,
+    alternatives: db.alternatives as Question['alternatives'],
+    answer: db.answer as Question['answer'],
+    subjectId: db.subject_id ?? '',
+    subjectName: db.subject_name ?? '',
+    year: db.year ?? undefined,
+    createdAt: db.created_at,
+  };
+}
+
+function toAttempt(db: DbAttempt): QuestionAttempt {
+  return {
+    questionId: db.question_id,
+    correct: db.correct,
+    answeredAt: db.answered_at,
+  };
+}
+
 export interface UseQuestionsReturn {
   questions: Question[];
   attempts: QuestionAttempt[];
-  addQuestion: (data: Omit<Question, 'id' | 'createdAt'>) => void;
-  deleteQuestion: (id: string) => void;
-  recordAttempt: (questionId: string, correct: boolean) => void;
+  loading: boolean;
+  addQuestion: (data: Omit<Question, 'id' | 'createdAt'>) => Promise<void>;
+  deleteQuestion: (id: string) => Promise<void>;
+  recordAttempt: (questionId: string, correct: boolean) => Promise<void>;
   getStatsBySubject: () => Record<string, { total: number; correct: number; pct: number }>;
   getRandomQuestion: (subjectId?: string) => Question | null;
 }
 
 export function useQuestions(): UseQuestionsReturn {
-  const [questions, setQuestions] = useLocalStorage<Question[]>('enem-questions', []);
-  const [attempts, setAttempts] = useLocalStorage<QuestionAttempt[]>('enem-question-attempts', []);
+  const { user } = useAuth();
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [attempts, setAttempts] = useState<QuestionAttempt[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addQuestion = useCallback((data: Omit<Question, 'id' | 'createdAt'>) => {
-    const newQ: Question = {
-      ...data,
-      id: Math.random().toString(36).slice(2, 11),
-      createdAt: new Date().toISOString(),
-    };
-    setQuestions(prev => [newQ, ...prev]);
-  }, [setQuestions]);
+  const fetchData = useCallback(async () => {
+    if (!user) { setLoading(false); return; }
+    setLoading(true);
+    const [qRes, aRes] = await Promise.all([
+      supabase.from('questions').select('*').eq('user_id', user.id),
+      supabase.from('question_attempts').select('*').eq('user_id', user.id),
+    ]);
+    if (!qRes.error && qRes.data) setQuestions((qRes.data as DbQuestion[]).map(toQuestion));
+    if (!aRes.error && aRes.data) setAttempts((aRes.data as DbAttempt[]).map(toAttempt));
+    setLoading(false);
+  }, [user]);
 
-  const deleteQuestion = useCallback((id: string) => {
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const addQuestion = useCallback(async (data: Omit<Question, 'id' | 'createdAt'>) => {
+    if (!user) return;
+    const { data: created } = await supabase.from('questions').insert({
+      user_id: user.id,
+      statement: data.statement,
+      alternatives: data.alternatives,
+      answer: data.answer,
+      subject_id: data.subjectId,
+      subject_name: data.subjectName,
+      year: data.year ?? null,
+    }).select().single();
+    if (created) setQuestions(prev => [toQuestion(created as DbQuestion), ...prev]);
+  }, [user]);
+
+  const deleteQuestion = useCallback(async (id: string) => {
+    if (!user) return;
+    await supabase.from('questions').delete().eq('id', id).eq('user_id', user.id);
+    await supabase.from('question_attempts').delete().eq('question_id', id).eq('user_id', user.id);
     setQuestions(prev => prev.filter(q => q.id !== id));
-  }, [setQuestions]);
+    setAttempts(prev => prev.filter(a => a.questionId !== id));
+  }, [user]);
 
-  const recordAttempt = useCallback((questionId: string, correct: boolean) => {
-    setAttempts(prev => [...prev, { questionId, correct, answeredAt: new Date().toISOString() }]);
-  }, [setAttempts]);
+  const recordAttempt = useCallback(async (questionId: string, correct: boolean) => {
+    if (!user) return;
+    const { data: created } = await supabase.from('question_attempts').insert({
+      user_id: user.id,
+      question_id: questionId,
+      correct,
+    }).select().single();
+    if (created) setAttempts(prev => [...prev, toAttempt(created as DbAttempt)]);
+  }, [user]);
 
   const getStatsBySubject = useCallback(() => {
     const stats: Record<string, { total: number; correct: number; pct: number }> = {};
@@ -70,5 +146,5 @@ export function useQuestions(): UseQuestionsReturn {
     return pool[Math.floor(Math.random() * pool.length)];
   }, [questions]);
 
-  return { questions, attempts, addQuestion, deleteQuestion, recordAttempt, getStatsBySubject, getRandomQuestion };
+  return { questions, attempts, loading, addQuestion, deleteQuestion, recordAttempt, getStatsBySubject, getRandomQuestion };
 }

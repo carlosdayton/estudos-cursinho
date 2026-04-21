@@ -97,12 +97,12 @@ export function FocusModeProvider({ children }: FocusModeProviderProps) {
     document.body.style.overflow = '';
   }, [clearCycleState, setIsFocusMode]);
 
-  const advanceCycle = useCallback(() => {
+  const advanceCycle = useCallback(async () => {
     if (!activeCycleState) return;
     const cycle = getCycleById(activeCycleState.cycleId);
     if (!cycle) return;
 
-    const { nextSubjectId, isCompleted, subjectChanged } = advanceToNextSubject(cycle);
+    const { nextSubjectId, isCompleted, subjectChanged } = await advanceToNextSubject(cycle);
 
     if (!isCompleted && nextSubjectId) {
       setActiveSubjectId(nextSubjectId);

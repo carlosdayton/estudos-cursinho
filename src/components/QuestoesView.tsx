@@ -124,7 +124,6 @@ function PracticeMode({ questions, onRecord, onExit }: {
   };
 
   const isCorrect = revealed && selected === q.answer;
-  const isWrong = revealed && selected !== q.answer;
 
   return (
     <div style={{ maxWidth: '680px', margin: '0 auto' }}>

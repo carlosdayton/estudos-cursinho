@@ -104,7 +104,7 @@ interface CellProps {
   compact?: boolean;
 }
 
-function ScheduleCell({ day, hour, subjectId, subjects, onSet, disabled, compact }: CellProps) {
+function ScheduleCell({ day: _day, hour: _hour, subjectId, subjects, onSet, disabled, compact }: CellProps) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const subject = subjects.find(s => s.id === subjectId);

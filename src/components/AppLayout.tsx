@@ -21,7 +21,8 @@ export type TabId =
   | 'metas'
   | 'analise'
   | 'cronograma'
-  | 'questoes';
+  | 'questoes'
+  | 'estatisticas';
 
 interface NavItem {
   id: TabId;

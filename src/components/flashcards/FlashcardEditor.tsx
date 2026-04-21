@@ -7,7 +7,7 @@ import { X, Save } from 'lucide-react';
 interface FlashcardEditorProps {
   subjects: Subject[];
   initialCard?: Flashcard;
-  onSave: (draft: FlashcardDraft) => string | null;
+  onSave: (draft: FlashcardDraft) => string | null | Promise<string | null>;
   onCancel: () => void;
 }
 
@@ -75,7 +75,7 @@ export default function FlashcardEditor({
     return Object.keys(newErrors).length === 0;
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!validate()) return;
     const draft: FlashcardDraft = {
       front,
@@ -83,7 +83,7 @@ export default function FlashcardEditor({
       subjectId,
       topicId: topicId || undefined,
     };
-    const error = onSave(draft);
+    const error = await onSave(draft);
     if (error) setGlobalError(error);
   }
 

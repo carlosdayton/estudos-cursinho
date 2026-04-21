@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Search, Pin, PinOff, Trash2, X, BookOpen,
-  Tag, ChevronDown, FileText, Edit3, Check
+  Tag, ChevronDown, FileText, Check
 } from 'lucide-react';
 import { useNotes, NOTE_TAGS, type Note, type NoteTag } from '../hooks/useNotes';
 import { useSubjects } from '../hooks/useSubjects';

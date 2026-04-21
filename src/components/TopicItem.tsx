@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { CheckCircle2, Timer, X, NotebookPen, BookOpen, Dumbbell } from 'lucide-react';
 import type { Topic } from '../utils/studyLogic';
 import { isReviewDue } from '../utils/studyLogic';
@@ -14,7 +14,7 @@ interface Props {
   onUpdateNotes: (notes: string) => void;
 }
 
-function TopicItem({ topic, subjectId, onToggleStudied, onToggleExercises, onRemove, onUpdateNotes }: Props) {
+function TopicItem({ topic, subjectId, onToggleStudied, onToggleExercises, onRemove, onUpdateNotes: _onUpdateNotes }: Props) {
   const { navigateTo } = useNavigation();
   const reviewDue = isReviewDue(topic.reviewDate);
   const completed = topic.isStudied && topic.isExercisesDone;

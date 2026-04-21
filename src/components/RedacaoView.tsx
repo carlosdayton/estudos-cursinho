@@ -529,7 +529,7 @@ export default function RedacaoView() {
     );
   }
 
-  if (editing && editing !== 'new') {
+  if (editing) {
     return (
       <RedacaoEditor
         initial={editing}

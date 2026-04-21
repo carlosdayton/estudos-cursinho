@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 const DEFAULT_WORK_MINUTES = 25;
 const DEFAULT_BREAK_MINUTES = 5;
@@ -9,6 +11,7 @@ export const BREAK_DURATION_OPTIONS = [1, 3, 5, 10, 15, 20];
 
 export interface UsePomodoroTimerOptions {
   onFocusSessionComplete?: () => void;
+  subjectId?: string;
 }
 
 export interface UsePomodoroTimerReturn {
@@ -48,6 +51,7 @@ function triggerNotification(completedMode: 'work' | 'break') {
  * Persiste sessionsCompleted no localStorage.
  */
 export function usePomodoroTimer(options?: UsePomodoroTimerOptions): UsePomodoroTimerReturn {
+  const { user } = useAuth();
   const onFocusSessionCompleteRef = useRef(options?.onFocusSessionComplete);
   const [sessionsCompleted, setSessionsCompleted] = useLocalStorage<number>(
     'pomodoro-sessions-completed',
@@ -140,6 +144,14 @@ export function usePomodoroTimer(options?: UsePomodoroTimerOptions): UsePomodoro
         const newCount = sessionsRef.current + 1;
         sessionsRef.current = newCount;
         setSessionsCompleted(newCount);
+        // Persistir no Supabase
+        if (user) {
+          supabase.from('pomodoro_sessions').insert({
+            user_id: user.id,
+            duration_minutes: workMinutesRef.current,
+            subject_id: options?.subjectId ?? null,
+          }).then(() => {});
+        }
         // Disparar callback de ciclo
         onFocusSessionCompleteRef.current?.();
       }

@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import * as React from 'react';
 import * as fc from 'fast-check';
 import { FocusModeProvider, useFocusMode, resolveActiveSubject } from './FocusModeContext';
+import { AuthProvider } from './AuthContext';
 import type { Subject, Topic } from '../utils/studyLogic';
 
 // ─── localStorage mock ────────────────────────────────────────────────────────
@@ -18,15 +20,39 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
+// ─── Supabase mock ────────────────────────────────────────────────────────────
+
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+      onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      signOut: vi.fn().mockResolvedValue({}),
+    },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          order: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      }),
+      insert: vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: null, error: null }) }) }),
+      upsert: vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: null, error: null }) }) }),
+      update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: null }) }),
+      delete: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: null }) }),
+    }),
+  },
+}));
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function makeSubject(id: string, name = 'Matéria', color = '#818cf8'): Subject {
   return { id, name, color, topics: [] };
 }
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <FocusModeProvider>{children}</FocusModeProvider>
-);
+const wrapper = ({ children }: { children: React.ReactNode }) =>
+  React.createElement(AuthProvider, null,
+    React.createElement(FocusModeProvider, null, children)
+  );
 
 // ─── resolveActiveSubject ─────────────────────────────────────────────────────
 

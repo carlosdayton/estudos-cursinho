@@ -44,7 +44,7 @@ function Confetti({ active }: { active: boolean }) {
 }
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
-function GoalCard({ goal, progress, target, unit, label, icon, subjectName, onDelete }: {
+function GoalCard({ goal: _goal, progress, target, unit, label, icon, subjectName, onDelete }: {
   goal: WeeklyGoal;
   progress: number;
   target: number;

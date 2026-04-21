@@ -1,33 +1,65 @@
 import { useMemo, useCallback } from 'react';
 import type { Simulado, SimuladoScores } from '../utils/studyLogic';
-import { useLocalStorage } from './useLocalStorage';
+import { useSupabaseQuery } from './useSupabaseQuery';
+import { useAuth } from '../context/AuthContext';
+
+interface DbSimulado {
+  id: string;
+  user_id: string;
+  date: string;
+  scores: SimuladoScores;
+  total: number;
+  label: string | null;
+  notes: string | null;
+  created_at: string;
+}
 
 export interface UseSimuladosReturn {
   simulados: Simulado[];
-  addSimulado: (scores: SimuladoScores) => void;
-  deleteSimulado: (id: string) => void;
+  loading: boolean;
+  addSimulado: (scores: SimuladoScores, label?: string, notes?: string) => Promise<void>;
+  deleteSimulado: (id: string) => Promise<void>;
   averageScore: number;
   bestScore: number;
   trend: 'up' | 'down' | 'stable';
 }
 
-export function useSimulados(): UseSimuladosReturn {
-  const [simulados, setSimulados] = useLocalStorage<Simulado[]>('enem-simulados-data', []);
+function toSimulado(db: DbSimulado): Simulado {
+  return {
+    id: db.id,
+    date: db.date,
+    scores: db.scores,
+    total: db.total,
+    label: db.label ?? undefined,
+    notes: db.notes ?? undefined,
+  };
+}
 
-  const addSimulado = useCallback((scores: SimuladoScores) => {
+export function useSimulados(): UseSimuladosReturn {
+  const { user } = useAuth();
+  const { data, loading, insert, remove } = useSupabaseQuery<DbSimulado>(
+    'simulados',
+    [],
+    { orderBy: { column: 'date', ascending: false } }
+  );
+
+  const simulados = useMemo(() => data.map(toSimulado), [data]);
+
+  const addSimulado = useCallback(async (scores: SimuladoScores, label?: string, notes?: string) => {
+    if (!user) return;
     const total = scores.linguagens + scores.humanas + scores.natureza + scores.matematica + scores.redacao;
-    const newSimulado: Simulado = {
-      id: Math.random().toString(36).slice(2, 11),
+    await insert({
       date: new Date().toISOString(),
       scores: { ...scores },
       total,
-    };
-    setSimulados(prev => [newSimulado, ...prev]);
-  }, [setSimulados]);
+      label: label ?? null,
+      notes: notes ?? null,
+    } as Omit<DbSimulado, 'id' | 'created_at' | 'updated_at' | 'user_id'>);
+  }, [user, insert]);
 
-  const deleteSimulado = useCallback((id: string) => {
-    setSimulados(prev => prev.filter(s => s.id !== id));
-  }, [setSimulados]);
+  const deleteSimulado = useCallback(async (id: string) => {
+    await remove(id);
+  }, [remove]);
 
   const averageScore = useMemo(() => {
     if (simulados.length === 0) return 0;
@@ -42,16 +74,11 @@ export function useSimulados(): UseSimuladosReturn {
 
   const trend = useMemo((): 'up' | 'down' | 'stable' => {
     if (simulados.length < 2) return 'stable';
-
-    // simulados[0] é o mais recente (inserido no início)
     const recent = simulados.slice(0, 3);
     const older = simulados.slice(3);
-
     if (older.length === 0) return 'stable';
-
     const recentAvg = recent.reduce((acc, s) => acc + s.total, 0) / recent.length;
     const olderAvg = older.reduce((acc, s) => acc + s.total, 0) / older.length;
-
     if (recentAvg > olderAvg) return 'up';
     if (recentAvg < olderAvg) return 'down';
     return 'stable';
@@ -59,6 +86,7 @@ export function useSimulados(): UseSimuladosReturn {
 
   return {
     simulados,
+    loading,
     addSimulado,
     deleteSimulado,
     averageScore,
