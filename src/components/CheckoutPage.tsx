@@ -46,8 +46,11 @@ export default function CheckoutPage() {
       const preference = await createPaymentPreference(email);
       
       // Sub-task 7.7: Redirect to Mercado Pago checkout
-      if (preference.init_point) {
-        window.location.href = preference.init_point;
+      // Use sandbox_init_point for test credentials, init_point for production
+      const checkoutUrl = preference.sandbox_init_point || preference.init_point;
+      
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
       } else {
         throw new Error('URL de checkout não recebida');
       }
@@ -433,46 +436,48 @@ export default function CheckoutPage() {
 
 // Sub-task 7.4: Payment preference creation function
 async function createPaymentPreference(email: string) {
-  // Mock implementation for now - will be replaced with actual Mercado Pago API call
-  // In production, this should call a backend endpoint that creates the preference
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Mock response structure
-  const mockPreference = {
-    id: 'mock-preference-id',
-    init_point: 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=mock-preference-id',
-    items: [
-      {
-        title: 'Foco ENEM - Assinatura Mensal',
-        description: 'Acesso completo à plataforma de estudos',
-        unit_price: 29.90,
-        quantity: 1
+  if (!SUPABASE_URL) {
+    throw new Error('Configuração não encontrada. Entre em contato com o suporte.');
+  }
+
+  try {
+    // Call Supabase Edge Function to create payment preference securely
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/create-preference`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Create preference error:', errorData);
+      
+      // User-friendly error messages
+      if (response.status === 400) {
+        throw new Error('Email inválido. Por favor, verifique e tente novamente.');
+      } else if (response.status === 500) {
+        throw new Error('Erro no servidor. Tente novamente em alguns instantes.');
+      } else {
+        throw new Error('Erro ao processar pagamento. Tente novamente.');
       }
-    ],
-    metadata: {
-      email: email
-    },
-    back_urls: {
-      success: `${window.location.origin}/success`,
-      failure: `${window.location.origin}/success?status=failed`,
-      pending: `${window.location.origin}/success?status=pending`
-    },
-    payment_methods: {
-      excluded_payment_types: [],
-      installments: 1
     }
-  };
-  
-  // For development: simulate success
-  // In production, this would be an actual API call:
-  // const response = await fetch('/api/create-preference', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ email })
-  // });
-  // return response.json();
-  
-  return mockPreference;
+
+    const preference = await response.json();
+    
+    // Validate response has init_point
+    if (!preference.init_point && !preference.sandbox_init_point) {
+      throw new Error('Resposta inválida do servidor. Tente novamente.');
+    }
+    
+    return preference;
+  } catch (error) {
+    console.error('Error creating payment preference:', error);
+    throw error instanceof Error 
+      ? error 
+      : new Error('Erro ao processar pagamento. Verifique sua conexão e tente novamente.');
+  }
 }
