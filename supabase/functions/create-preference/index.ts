@@ -94,9 +94,9 @@ serve(async (req) => {
     const preferenceData = {
       items: [
         {
-          title: 'Foco ENEM - Assinatura Mensal',
-          description: 'Acesso completo à plataforma de estudos para o ENEM',
-          unit_price: 29.90,
+          title: 'Foco ENEM - Acesso Vitalício',
+          description: 'Acesso completo e permanente à plataforma de estudos para o ENEM',
+          unit_price: 47.00,
           quantity: 1,
           currency_id: 'BRL',
         },
@@ -114,7 +114,7 @@ serve(async (req) => {
       },
       auto_return: 'approved',
       payment_methods: {
-        installments: 12,
+        installments: 4,
         default_installments: 1,
       },
       notification_url: WEBHOOK_URL,

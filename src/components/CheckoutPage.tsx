@@ -161,7 +161,7 @@ export default function CheckoutPage() {
             marginBottom: '0.5rem',
             letterSpacing: '-0.02em'
           }}>
-            Assinar Foco ENEM
+            Acesso Vitalício Foco ENEM
           </h1>
 
           <p style={{
@@ -169,7 +169,7 @@ export default function CheckoutPage() {
             color: 'rgba(255,255,255,0.6)',
             lineHeight: 1.6
           }}>
-            Acesso completo à plataforma de estudos
+            Acesso completo e permanente à plataforma de estudos
           </p>
         </div>
 
@@ -190,7 +190,7 @@ export default function CheckoutPage() {
             letterSpacing: '0.1em',
             marginBottom: '0.5rem'
           }}>
-            Assinatura Mensal
+            Acesso Vitalício
           </p>
           <div style={{
             display: 'flex',
@@ -211,24 +211,34 @@ export default function CheckoutPage() {
               color: '#fff',
               letterSpacing: '-0.02em'
             }}>
-              29
+              47
             </span>
             <span style={{
               fontSize: '1.5rem',
               color: 'rgba(255,255,255,0.6)',
               fontWeight: 700
             }}>
-              ,90
-            </span>
-            <span style={{
-              fontSize: '0.875rem',
-              color: 'rgba(255,255,255,0.5)',
-              fontWeight: 600,
-              marginLeft: '0.25rem'
-            }}>
-              /mês
+              ,00
             </span>
           </div>
+          {/* Installment highlight */}
+          <p style={{
+            marginTop: '0.75rem',
+            fontSize: '0.9rem',
+            color: '#a5b4fc',
+            fontWeight: 700,
+            letterSpacing: '0.01em'
+          }}>
+            ou <strong style={{ color: '#818cf8', fontSize: '1rem' }}>4x de R$11,75</strong> sem juros
+          </p>
+          <p style={{
+            marginTop: '0.4rem',
+            fontSize: '0.75rem',
+            color: 'rgba(255,255,255,0.35)',
+            fontWeight: 500
+          }}>
+            Pagamento único • Acesso para sempre
+          </p>
         </div>
 
         {/* Form */}
