@@ -33,7 +33,7 @@ export default function LandingPage() {
     if (error) {
       showToast('Erro ao enviar link. Verifique o email e tente novamente.', 'error');
     } else {
-      showToast('Link mágico enviado! Verifique sua caixa de entrada.', 'success');
+      showToast('Link de acesso enviado! Verifique sua caixa de entrada.', 'success');
       setShowLogin(false);
       setEmail('');
     }
@@ -237,7 +237,7 @@ export default function LandingPage() {
             >
               <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '0.5rem' }}>Acessar minha conta</h3>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Enviaremos um link mágico para você entrar sem senha.
+                Enviaremos um link de acesso seguro para o seu email.
               </p>
               
               <input
@@ -274,7 +274,7 @@ export default function LandingPage() {
                   marginTop: '0.5rem'
                 }}
               >
-                {isSubmitting ? 'Enviando...' : 'Receber Link Mágico'}
+                {isSubmitting ? 'Enviando...' : 'Receber Link de Acesso'}
               </button>
 
               <button
