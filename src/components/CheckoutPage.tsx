@@ -454,15 +454,17 @@ async function createPaymentPreference(email: string) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Create preference error:', errorData);
+      console.error('Create preference error:', { status: response.status, body: errorData });
       
-      // User-friendly error messages
+      // Show the actual server error message when available
+      const serverMessage = errorData?.message || errorData?.error || null;
+      
       if (response.status === 400) {
-        throw new Error('Email inválido. Por favor, verifique e tente novamente.');
+        throw new Error(serverMessage || 'Email inválido. Por favor, verifique e tente novamente.');
       } else if (response.status === 500) {
-        throw new Error('Erro no servidor. Tente novamente em alguns instantes.');
+        throw new Error(serverMessage || 'Erro no servidor. Tente novamente em alguns instantes.');
       } else {
-        throw new Error('Erro ao processar pagamento. Tente novamente.');
+        throw new Error(serverMessage || 'Erro ao processar pagamento. Tente novamente.');
       }
     }
 

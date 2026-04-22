@@ -18,7 +18,7 @@ serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
         'Access-Control-Max-Age': '86400',
       },
     });
@@ -86,8 +86,9 @@ serve(async (req) => {
       );
     }
 
-    // Get origin for back URLs
-    const origin = req.headers.get('origin') || 'https://estudos-cursinho.vercel.app';
+    // Always use the production URL for back_urls.
+    // Mercado Pago rejects localhost URLs when auto_return is enabled.
+    const PRODUCTION_URL = 'https://estudos-cursinho.vercel.app';
 
     // Create payment preference
     const preferenceData = {
@@ -107,11 +108,9 @@ serve(async (req) => {
         email: email,
       },
       back_urls: {
-        success: `${origin}/success?status=approved`,
-        // Bug #2 fix: was "rejected" but SuccessPage only handles "failed".
-        // "rejected" fell into the else-branch and showed "Pagamento Confirmado!" on failure.
-        failure: `${origin}/success?status=failed`,
-        pending: `${origin}/success?status=pending`,
+        success: `${PRODUCTION_URL}/success?status=approved`,
+        failure: `${PRODUCTION_URL}/success?status=failed`,
+        pending: `${PRODUCTION_URL}/success?status=pending`,
       },
       auto_return: 'approved',
       payment_methods: {
