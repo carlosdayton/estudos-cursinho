@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense, useCallback } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ToastProvider } from './context/ToastContext';
 import { FocusModeProvider, useFocusMode } from './context/FocusModeContext';
@@ -21,10 +22,13 @@ import GoalsView from './components/GoalsView';
 import SimuladosAnalise from './components/SimuladosAnalise';
 import ScheduleView from './components/ScheduleView';
 import QuestoesView from './components/QuestoesView';
+import LandingPage from './components/LandingPage';
+import CheckoutPage from './components/CheckoutPage';
+import SuccessPage from './components/SuccessPage';
 import { Plus, GraduationCap, LayoutGrid, Target, Sparkles } from 'lucide-react';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import AuthScreen from './components/AuthScreen';
+import { useSubscription } from './hooks/useSubscription';
 
 import { getDaysUntilEnem, ENEM_2026_DATE } from './utils/studyLogic';
 import { useEffect } from 'react';
@@ -71,7 +75,52 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) return <AuthScreen />;
+  // If not authenticated, show public routes (Landing, Checkout, Success)
+  if (!user) {
+    return <>{children}</>;
+  }
+
+  // If authenticated, redirect to dashboard
+  return <Navigate to="/dashboard" replace />;
+}
+
+// Protected route wrapper for authenticated users with subscription check
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading: authLoading } = useAuth();
+  const { hasActiveSubscription, loading: subscriptionLoading } = useSubscription();
+
+  const loading = authLoading || subscriptionLoading;
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh', width: '100vw',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'var(--bg-dark)', backgroundImage: 'var(--bg-gradient)',
+      }}>
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}
+        >
+          <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+            <GraduationCap size={24} strokeWidth={2.5} />
+          </div>
+          <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Carregando...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Redirect to landing page if not authenticated
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Redirect to landing page if user doesn't have an active subscription
+  if (!hasActiveSubscription) {
+    return <Navigate to="/" replace />;
+  }
 
   return <>{children}</>;
 }
@@ -408,9 +457,36 @@ export default function App() {
       <ToastProvider>
         <FocusModeProvider>
           <NavigationProvider>
-            <AuthGate>
-              <AppInner />
-            </AuthGate>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={
+                <AuthGate>
+                  <LandingPage />
+                </AuthGate>
+              } />
+              
+              <Route path="/checkout" element={
+                <AuthGate>
+                  <CheckoutPage />
+                </AuthGate>
+              } />
+              
+              <Route path="/success" element={
+                <AuthGate>
+                  <SuccessPage />
+                </AuthGate>
+              } />
+              
+              {/* Protected routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <AppInner />
+                </ProtectedRoute>
+              } />
+              
+              {/* Redirect any unknown routes to landing */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </NavigationProvider>
         </FocusModeProvider>
       </ToastProvider>

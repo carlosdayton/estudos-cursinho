@@ -374,3 +374,38 @@ CREATE TRIGGER redacoes_updated_at BEFORE UPDATE ON redacoes
 
 CREATE TRIGGER user_settings_updated_at BEFORE UPDATE ON user_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
+-- 16. SUBSCRIPTIONS (Payment System)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  payment_id TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- Users can only read their own subscription records
+CREATE POLICY "Users can read own subscriptions"
+  ON subscriptions FOR SELECT
+  USING (user_id = auth.uid());
+
+-- Service role can insert and update subscription records
+CREATE POLICY "Service role can insert subscriptions"
+  ON subscriptions FOR INSERT
+  WITH CHECK (auth.jwt()->>'role' = 'service_role');
+
+CREATE POLICY "Service role can update subscriptions"
+  ON subscriptions FOR UPDATE
+  USING (auth.jwt()->>'role' = 'service_role')
+  WITH CHECK (auth.jwt()->>'role' = 'service_role');
+
+CREATE INDEX idx_subscriptions_user ON subscriptions(user_id);
+CREATE INDEX idx_subscriptions_payment ON subscriptions(payment_id);
+
+CREATE TRIGGER subscriptions_updated_at BEFORE UPDATE ON subscriptions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
