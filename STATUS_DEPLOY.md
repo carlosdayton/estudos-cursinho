@@ -53,7 +53,30 @@
 
 ## ⚠️ O que FALTA (Ações Manuais):
 
-### 🔧 1. Configurar Webhook no Mercado Pago
+### 🔧 1. Deploy da Edge Function create-preference
+**Status**: ⚠️ **PENDENTE - AÇÃO MANUAL NECESSÁRIA**
+
+**O que é**: Nova Edge Function para criar preferências de pagamento de forma segura (sem expor o Access Token no frontend).
+
+**Por que é necessário**: O checkout estava usando um mock e gerando links inválidos. Agora usa uma Edge Function real que se comunica com a API do Mercado Pago.
+
+**Passos**:
+1. Acesse: https://supabase.com/dashboard/project/bzahiysaveiyfwdegzmk/functions
+2. Clique em "Create a new function"
+3. Nome: `create-preference`
+4. Copie o código de: `supabase/functions/create-preference/index.ts`
+5. Cole no editor e clique em "Deploy"
+
+**OU via CLI** (se disponível):
+```bash
+supabase functions deploy create-preference
+```
+
+**Documentação**: Ver `DEPLOY_CREATE_PREFERENCE.md`
+
+---
+
+### 🔧 2. Configurar Webhook no Mercado Pago
 **Status**: ⚠️ **PENDENTE - AÇÃO MANUAL NECESSÁRIA**
 
 **Passos**:
@@ -123,7 +146,8 @@ VITE_MERCADO_PAGO_PUBLIC_KEY=APP_USR-fb95c179-bdd7-46a6-8b44-3bae67a7f72e
 
 | Item | Status | Ação Necessária |
 |------|--------|-----------------|
-| Backend (Edge Function) | ✅ Deployado | Nenhuma |
+| Backend (Edge Function webhook) | ✅ Deployado | Nenhuma |
+| Backend (Edge Function create-preference) | ⚠️ Pendente | **Deploy manual necessário** |
 | Build do Frontend | ✅ Passando | Nenhuma |
 | Variáveis Locais (.env) | ✅ Configuradas | Nenhuma |
 | Banco de Dados | ✅ Configurado | Nenhuma |
@@ -135,15 +159,19 @@ VITE_MERCADO_PAGO_PUBLIC_KEY=APP_USR-fb95c179-bdd7-46a6-8b44-3bae67a7f72e
 
 ## 🎯 Próximos Passos (em ordem):
 
-1. **Configure o webhook no Mercado Pago** (5 minutos)
+1. **Deploy da Edge Function create-preference** (5 minutos)
+   - Siga: `DEPLOY_CREATE_PREFERENCE.md`
+   - **IMPORTANTE:** Sem isso, o checkout não vai funcionar!
+
+2. **Configure o webhook no Mercado Pago** (5 minutos)
    - Siga: `PROXIMOS_PASSOS_WEBHOOK.md`
 
-2. **Configure as variáveis na Vercel** (5 minutos)
+3. **Configure as variáveis na Vercel** (5 minutos)
    - Siga: `CONFIGURAR_VERCEL.md`
 
-3. **Faça redeploy na Vercel** (automático após adicionar variáveis)
+4. **Faça redeploy na Vercel** (automático após adicionar variáveis)
 
-4. **Teste o fluxo completo** (10 minutos)
+5. **Teste o fluxo completo** (10 minutos)
    - Use cartão de teste
    - Verifique logs do webhook
    - Confirme recebimento do email
@@ -222,7 +250,8 @@ npm test
 
 ## ✅ Checklist Final
 
-- [x] Backend deployado
+- [x] Backend (webhook) deployado
+- [ ] Backend (create-preference) deployado
 - [x] Build do frontend passando
 - [x] Variáveis locais configuradas
 - [x] Banco de dados configurado
@@ -236,11 +265,11 @@ npm test
 
 ---
 
-**Status Atual**: ✅ **Pronto para configuração final!**
+**Status Atual**: ⚠️ **Pronto para deploy da Edge Function create-preference!**
 
-**Tempo Estimado para Conclusão**: 15-20 minutos (configurações manuais)
+**Tempo Estimado para Conclusão**: 20-25 minutos (configurações manuais)
 
-**Próxima Ação**: Configure o webhook no Mercado Pago seguindo `PROXIMOS_PASSOS_WEBHOOK.md`
+**Próxima Ação**: Deploy da Edge Function create-preference seguindo `DEPLOY_CREATE_PREFERENCE.md`
 
 ---
 
