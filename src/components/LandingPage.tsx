@@ -17,7 +17,7 @@ import {
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { signInWithOtp } = useAuth();
+  const { signInWithOtp, user, signOut } = useAuth();
   const { showToast } = useToastContext();
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
@@ -194,26 +194,47 @@ export default function LandingPage() {
                 }}
               >
                 <Zap size={24} fill="currentColor" />
-                Assinar Agora
+                {user ? 'Completar Assinatura' : 'Assinar Agora'}
               </button>
 
-              <button
-                onClick={() => setShowLogin(true)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'rgba(255,255,255,0.6)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  textUnderlineOffset: '4px'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
-                onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-              >
-                Já tenho acesso — Fazer Login
-              </button>
+              {user ? (
+                <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+                  <p style={{ marginBottom: '0.5rem' }}>Você está autenticado como <strong>{user.email}</strong>,<br/>mas não possui assinatura ativa.</p>
+                  <button
+                    onClick={() => signOut()}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'rgba(255,255,255,0.5)',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textDecoration: 'underline'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.color = '#f87171'}
+                    onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                  >
+                    Sair da conta
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLogin(true)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.6)',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '4px'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                >
+                  Já tenho acesso — Fazer Login
+                </button>
+              )}
             </motion.div>
           ) : (
             <motion.form
