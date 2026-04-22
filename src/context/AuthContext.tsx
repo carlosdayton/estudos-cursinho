@@ -15,6 +15,7 @@ interface AuthActions {
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  signInWithOtp: (email: string) => Promise<{ error: AuthError | null }>;
 }
 
 type AuthContextValue = AuthState & AuthActions;
@@ -62,6 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const signInWithOtp = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({ 
+      email,
+      options: { emailRedirectTo: window.location.origin }
+    });
+    return { error };
+  };
+
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin,
@@ -70,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, resetPassword }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, resetPassword, signInWithOtp }}>
       {children}
     </AuthContext.Provider>
   );

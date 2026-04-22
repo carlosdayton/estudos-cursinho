@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+import { useToastContext } from '../context/ToastContext';
 import { 
   GraduationCap, 
   Target, 
@@ -11,41 +12,32 @@ import {
   TrendingUp,
   Clock,
   Award,
-  Zap,
-  LogIn,
-  Mail,
-  CheckCircle
+  Zap
 } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { signInWithOtp } = useAuth();
+  const { showToast } = useToastContext();
   const [showLogin, setShowLogin] = useState(false);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginState, setLoginState] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
-  const [loginError, setLoginError] = useState('');
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleLogin(e: React.FormEvent) {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail)) {
-      setLoginError('Por favor, insira um email válido.');
-      return;
-    }
-    setLoginState('loading');
-    setLoginError('');
-    const { error } = await supabase.auth.signInWithOtp({
-      email: loginEmail.trim(),
-      options: {
-        // After clicking the magic link, redirect to dashboard
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
+    if (!email) return;
+    setIsSubmitting(true);
+    const { error } = await signInWithOtp(email);
+    setIsSubmitting(false);
+    
     if (error) {
-      setLoginState('error');
-      setLoginError('Não foi possível enviar o link. Tente novamente.');
+      showToast('Erro ao enviar link. Verifique o email e tente novamente.', 'error');
     } else {
-      setLoginState('sent');
+      showToast('Link mágico enviado! Verifique sua caixa de entrada.', 'success');
+      setShowLogin(false);
+      setEmail('');
     }
-  }
+  };
 
   const features = [
     {
@@ -161,213 +153,169 @@ export default function LandingPage() {
           Sua plataforma completa de estudos para conquistar a aprovação no ENEM
         </motion.p>
 
-        {/* CTA Button */}
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(129,140,248,0.5)' }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/checkout')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '1.25rem 3rem',
-            borderRadius: '16px',
-            border: 'none',
-            cursor: 'pointer',
-            background: 'linear-gradient(135deg, #818cf8, #6366f1)',
-            color: '#fff',
-            fontSize: '1.125rem',
-            fontWeight: 800,
-            fontFamily: 'Lexend, sans-serif',
-            letterSpacing: '0.02em',
-            textTransform: 'uppercase',
-            boxShadow: '0 10px 30px rgba(129,140,248,0.4)',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <Zap size={24} fill="currentColor" />
-          Assinar Agora
-        </motion.button>
-
-        {/* Trust Badge */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          style={{
-            marginTop: '2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            color: 'rgba(255,255,255,0.5)',
-            fontSize: '0.875rem',
-            fontWeight: 600
-          }}
-        >
-          <Award size={18} />
-          <span>Acesso imediato após o pagamento</span>
-        </motion.div>
-
-        {/* Returning student login */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          style={{ marginTop: '2.5rem' }}
-        >
+        {/* Dynamic CTA / Login Section */}
+        <AnimatePresence mode="wait">
           {!showLogin ? (
-            <button
-              onClick={() => setShowLogin(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'rgba(255,255,255,0.4)',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                fontFamily: 'Lexend, sans-serif',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'color 0.2s ease',
-                textDecoration: 'underline',
-                textDecorationStyle: 'dotted',
-                textUnderlineOffset: '3px'
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+            <motion.div
+              key="cta"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}
             >
-              <LogIn size={14} />
-              Já sou aluno — Acessar minha conta
-            </button>
-          ) : (
-            <AnimatePresence>
-              <motion.div
-                key="login-form"
-                initial={{ opacity: 0, y: -10, height: 0 }}
-                animate={{ opacity: 1, y: 0, height: 'auto' }}
-                exit={{ opacity: 0, y: -10, height: 0 }}
-                transition={{ duration: 0.35 }}
+              <button
+                onClick={() => navigate('/checkout')}
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '1.25rem 3rem',
                   borderRadius: '16px',
-                  padding: '1.5rem',
-                  maxWidth: '420px',
-                  margin: '0 auto',
-                  backdropFilter: 'blur(10px)'
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                  color: '#fff',
+                  fontSize: '1.125rem',
+                  fontWeight: 800,
+                  fontFamily: 'Lexend, sans-serif',
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase',
+                  boxShadow: '0 10px 30px rgba(129,140,248,0.4)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(129,140,248,0.5)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(129,140,248,0.4)';
                 }}
               >
-                {loginState === 'sent' ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    style={{ textAlign: 'center' }}
-                  >
-                    <CheckCircle size={40} style={{ color: '#4ade80', margin: '0 auto 1rem' }} />
-                    <p style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>
-                      Link enviado!
-                    </p>
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem', lineHeight: 1.6 }}>
-                      Verifique seu email <strong style={{ color: '#a5b4fc' }}>{loginEmail}</strong> e clique no link mágico para entrar.
-                    </p>
-                  </motion.div>
-                ) : (
-                  <form onSubmit={handleLogin}>
-                    <p style={{
-                      color: 'rgba(255,255,255,0.7)',
-                      fontSize: '0.875rem',
-                      fontWeight: 700,
-                      marginBottom: '1rem',
-                      textAlign: 'left'
-                    }}>
-                      Digite seu email para receber o link de acesso:
-                    </p>
-                    <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
-                      <Mail
-                        size={16}
-                        style={{
-                          position: 'absolute',
-                          left: '0.875rem',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          color: 'rgba(255,255,255,0.4)',
-                          pointerEvents: 'none'
-                        }}
-                      />
-                      <input
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={loginEmail}
-                        onChange={e => { setLoginEmail(e.target.value); setLoginError(''); }}
-                        autoFocus
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem 1rem 0.75rem 2.5rem',
-                          background: 'rgba(255,255,255,0.08)',
-                          border: loginError ? '1px solid #f87171' : '1px solid rgba(255,255,255,0.15)',
-                          borderRadius: '10px',
-                          color: '#fff',
-                          fontSize: '0.9rem',
-                          fontFamily: 'Lexend, sans-serif',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
-                      />
-                    </div>
-                    {loginError && (
-                      <p style={{ color: '#f87171', fontSize: '0.8rem', marginBottom: '0.75rem', textAlign: 'left' }}>
-                        {loginError}
-                      </p>
-                    )}
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button
-                        type="submit"
-                        disabled={loginState === 'loading'}
-                        style={{
-                          flex: 1,
-                          padding: '0.75rem',
-                          borderRadius: '10px',
-                          border: 'none',
-                          cursor: loginState === 'loading' ? 'wait' : 'pointer',
-                          background: 'linear-gradient(135deg, #818cf8, #6366f1)',
-                          color: '#fff',
-                          fontSize: '0.875rem',
-                          fontWeight: 700,
-                          fontFamily: 'Lexend, sans-serif',
-                          opacity: loginState === 'loading' ? 0.7 : 1,
-                          transition: 'opacity 0.2s'
-                        }}
-                      >
-                        {loginState === 'loading' ? 'Enviando...' : 'Enviar Link de Acesso'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setShowLogin(false); setLoginState('idle'); setLoginEmail(''); setLoginError(''); }}
-                        style={{
-                          padding: '0.75rem 1rem',
-                          borderRadius: '10px',
-                          border: '1px solid rgba(255,255,255,0.15)',
-                          cursor: 'pointer',
-                          background: 'transparent',
-                          color: 'rgba(255,255,255,0.5)',
-                          fontSize: '0.875rem',
-                          fontFamily: 'Lexend, sans-serif'
-                        }}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </motion.div>
-            </AnimatePresence>
+                <Zap size={24} fill="currentColor" />
+                Assinar Agora
+              </button>
+
+              <button
+                onClick={() => setShowLogin(true)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.6)',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '4px'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+              >
+                Já tenho acesso — Fazer Login
+              </button>
+            </motion.div>
+          ) : (
+            <motion.form
+              key="login"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+              onSubmit={handleLogin}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                maxWidth: '400px',
+                margin: '0 auto',
+                background: 'rgba(30,41,59,0.5)',
+                padding: '2rem',
+                borderRadius: '24px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)'
+              }}
+            >
+              <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '0.5rem' }}>Acessar minha conta</h3>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                Enviaremos um link mágico para você entrar sem senha.
+              </p>
+              
+              <input
+                type="email"
+                required
+                placeholder="Seu email cadastrado"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(129,140,248,0.3)',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  fontFamily: 'Lexend, sans-serif'
+                }}
+              />
+              
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  background: isSubmitting ? 'rgba(129,140,248,0.5)' : '#818cf8',
+                  color: '#000',
+                  border: 'none',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Lexend, sans-serif',
+                  marginTop: '0.5rem'
+                }}
+              >
+                {isSubmitting ? 'Enviando...' : 'Receber Link Mágico'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowLogin(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.5)',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  marginTop: '0.5rem'
+                }}
+              >
+                Voltar
+              </button>
+            </motion.form>
           )}
-        </motion.div>
+        </AnimatePresence>
+
+        {/* Trust Badge */}
+        {!showLogin && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            style={{
+              marginTop: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              color: 'rgba(255,255,255,0.5)',
+              fontSize: '0.875rem',
+              fontWeight: 600
+            }}
+          >
+            <Award size={18} />
+            <span>Acesso imediato após o pagamento</span>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Features Grid */}
