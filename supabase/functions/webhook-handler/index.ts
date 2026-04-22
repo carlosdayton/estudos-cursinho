@@ -369,23 +369,40 @@ serve(async (req) => {
         if (userError.message?.includes('already registered') || userError.message?.includes('already exists')) {
           console.log('User already exists, fetching existing user', { paymentId, email });
           
-          // Fetch existing user by email
-          const { data: existingUsers, error: fetchError } = await supabase.auth.admin.listUsers();
-          
-          if (fetchError) {
-            console.error('Error fetching existing user', { paymentId, email, error: fetchError });
-            return new Response(
-              JSON.stringify({ error: 'Failed to retrieve user account' }),
-              { 
-                status: 500, 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-              }
-            );
-          }
+          // Bug #5 fix: listUsers() without params only returns up to 1000 users.
+          // Use pagination to search all pages until the user is found by email.
+          let foundUser = null;
+          let currentPage = 1;
+          const usersPerPage = 1000;
 
-          const existingUser = existingUsers.users.find(u => u.email === email);
+          while (!foundUser) {
+            const { data: pageData, error: pageError } = await supabase.auth.admin.listUsers({
+              page: currentPage,
+              perPage: usersPerPage,
+            });
+
+            if (pageError) {
+              console.error('Error fetching existing user (page ' + currentPage + ')', { paymentId, email, error: pageError });
+              return new Response(
+                JSON.stringify({ error: 'Failed to retrieve user account' }),
+                { 
+                  status: 500, 
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+                }
+              );
+            }
+
+            if (!pageData?.users?.length) break; // No more pages
+
+            foundUser = pageData.users.find((u: { email?: string }) => u.email === email) ?? null;
+
+            // Stop if this was the last page (returned fewer than perPage)
+            if (pageData.users.length < usersPerPage) break;
+            currentPage++;
+          }
           
-          if (!existingUser) {
+
+          if (!foundUser) {
             console.error('User exists but could not be found', { paymentId, email });
             return new Response(
               JSON.stringify({ error: 'Failed to retrieve user account' }),
@@ -397,7 +414,7 @@ serve(async (req) => {
           }
 
           // Use existing user's ID
-          const userId = existingUser.id;
+          const userId = foundUser.id;
           console.log('Using existing user account', { paymentId, userId, email });
 
           // Sub-task 4.3: Create subscription record

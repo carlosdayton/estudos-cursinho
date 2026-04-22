@@ -51,8 +51,14 @@ function SectionSkeleton() {
 }
 
 // ─── Auth gate ────────────────────────────────────────────────────────────────
+// Bug #3 fix: also checks subscription to avoid infinite redirect loop.
+// A user with an account but no active subscription would previously be bounced
+// between AuthGate (→ /dashboard) and ProtectedRoute (→ /) indefinitely.
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { hasActiveSubscription, loading: subLoading } = useSubscription();
+
+  const loading = authLoading || subLoading;
 
   if (loading) {
     return (
@@ -75,13 +81,14 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not authenticated, show public routes (Landing, Checkout, Success)
-  if (!user) {
-    return <>{children}</>;
+  // Only redirect to /dashboard if the user is authenticated AND has an active subscription.
+  // If authenticated but without subscription, keep rendering the public page
+  // (e.g. landing, checkout) so the user can complete a purchase.
+  if (user && hasActiveSubscription) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // If authenticated, redirect to dashboard
-  return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
 }
 
 // Protected route wrapper for authenticated users with subscription check
@@ -471,11 +478,10 @@ export default function App() {
                 </AuthGate>
               } />
               
-              <Route path="/success" element={
-                <AuthGate>
-                  <SuccessPage />
-                </AuthGate>
-              } />
+              {/* Bug #1 fix: /success must be outside AuthGate so that an already-
+                  authenticated user who just paid can still see the confirmation page
+                  instead of being redirected to /dashboard. */}
+              <Route path="/success" element={<SuccessPage />} />
               
               {/* Protected routes */}
               <Route path="/dashboard" element={

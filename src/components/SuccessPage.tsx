@@ -218,51 +218,80 @@ export default function SuccessPage() {
             gap: '1rem'
           }}
         >
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              padding: '1rem',
-              borderRadius: '16px',
-              border: 'none',
-              cursor: 'pointer',
-              background: 'linear-gradient(135deg, #818cf8, #6366f1)',
-              color: '#fff',
-              fontSize: '1rem',
-              fontWeight: 800,
-              fontFamily: 'Lexend, sans-serif',
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase',
-              boxShadow: '0 10px 30px rgba(129,140,248,0.4)',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <Home size={20} />
-            Voltar ao Início
-          </button>
-
-          {status === 'failed' && (
+          {/* Bug #4 fix: for "failed" status, "Tentar Novamente" is the primary action.
+              For "approved"/"pending", going back to landing makes sense since the
+              user must wait for the email — there's nothing else to do in the app. */}
+          {status === 'failed' ? (
+            <>
+              <button
+                onClick={() => navigate('/checkout')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '1rem',
+                  borderRadius: '16px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  fontWeight: 800,
+                  fontFamily: 'Lexend, sans-serif',
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase',
+                  boxShadow: '0 10px 30px rgba(129,140,248,0.4)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Tentar Novamente
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                style={{
+                  padding: '1rem',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  cursor: 'pointer',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'rgba(255,255,255,0.8)',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  fontFamily: 'Lexend, sans-serif',
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Voltar ao Início
+              </button>
+            </>
+          ) : (
             <button
-              onClick={() => navigate('/checkout')}
+              onClick={() => navigate('/')}
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
                 padding: '1rem',
                 borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.2)',
+                border: 'none',
                 cursor: 'pointer',
-                background: 'rgba(255,255,255,0.05)',
-                color: 'rgba(255,255,255,0.8)',
+                background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+                color: '#fff',
                 fontSize: '1rem',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontFamily: 'Lexend, sans-serif',
                 letterSpacing: '0.02em',
                 textTransform: 'uppercase',
+                boxShadow: '0 10px 30px rgba(129,140,248,0.4)',
                 transition: 'all 0.3s ease'
               }}
             >
-              Tentar Novamente
+              <Home size={20} />
+              Voltar ao Início
             </button>
           )}
         </motion.div>

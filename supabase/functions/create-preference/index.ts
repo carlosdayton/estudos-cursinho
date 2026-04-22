@@ -108,7 +108,9 @@ serve(async (req) => {
       },
       back_urls: {
         success: `${origin}/success?status=approved`,
-        failure: `${origin}/success?status=rejected`,
+        // Bug #2 fix: was "rejected" but SuccessPage only handles "failed".
+        // "rejected" fell into the else-branch and showed "Pagamento Confirmado!" on failure.
+        failure: `${origin}/success?status=failed`,
         pending: `${origin}/success?status=pending`,
       },
       auto_return: 'approved',
