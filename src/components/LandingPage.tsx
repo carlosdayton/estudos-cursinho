@@ -17,12 +17,13 @@ import {
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { signIn, user, signOut } = useAuth();
+  const { signIn, resetPassword, user, signOut } = useAuth();
   const { showToast } = useToastContext();
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +41,28 @@ export default function LandingPage() {
     } else {
       // Sucesso - o AuthGate vai redirecionar automaticamente
       showToast('Login realizado com sucesso!', 'success');
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!email || !email.trim()) {
+      showToast('Insira seu email primeiro', 'error');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showToast('Email inválido', 'error');
+      return;
+    }
+
+    setIsResetting(true);
+    const { error } = await resetPassword(email);
+    setIsResetting(false);
+
+    if (error) {
+      showToast('Erro ao enviar email. Tente novamente.', 'error');
+    } else {
+      showToast('Email de recuperação enviado! Verifique sua caixa de entrada.', 'success');
     }
   };
 
@@ -320,6 +343,31 @@ export default function LandingPage() {
                   fontFamily: 'Lexend, sans-serif'
                 }}
               />
+
+              {/* Forgot password link */}
+              <div style={{ textAlign: 'right', marginTop: '-0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={handleResetPassword}
+                  disabled={isResetting}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: isResetting ? 'not-allowed' : 'pointer',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '3px',
+                    fontFamily: 'Lexend, sans-serif',
+                    padding: 0
+                  }}
+                  onMouseOver={(e) => !isResetting && (e.currentTarget.style.color = '#818cf8')}
+                  onMouseOut={(e) => !isResetting && (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+                >
+                  {isResetting ? 'Enviando...' : 'Esqueci minha senha'}
+                </button>
+              </div>
               
               <button
                 type="submit"
