@@ -88,7 +88,7 @@ serve(async (req) => {
 
     // Always use the production URL for back_urls.
     // Mercado Pago rejects localhost URLs when auto_return is enabled.
-    const PRODUCTION_URL = 'https://estudos-cursinho.vercel.app';
+    const PRODUCTION_URL = 'https://foco-enem-curso.vercel.app';
 
     // Create payment preference
     const preferenceData = {
