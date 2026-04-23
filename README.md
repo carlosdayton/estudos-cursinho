@@ -83,6 +83,14 @@ Chaves utilizadas:
 
 ## 🏃 Rodando localmente
 
+### Pré-requisitos
+
+1. **Node.js** (versão 18 ou superior)
+2. **Conta Supabase** - [Criar conta gratuita](https://supabase.com)
+3. **Conta Mercado Pago** - [Criar conta de desenvolvedor](https://www.mercadopago.com.br/developers)
+
+### Configuração
+
 ```bash
 # Clone o repositório
 git clone https://github.com/carlosdayton/estudos-cursinho.git
@@ -91,6 +99,30 @@ cd estudos-cursinho
 # Instale as dependências
 npm install
 
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas credenciais
+```
+
+### Variáveis de Ambiente
+
+Edite o arquivo `.env` com as seguintes credenciais:
+
+#### Supabase
+1. Acesse [Supabase Dashboard](https://supabase.com/dashboard)
+2. Selecione seu projeto → **Settings** → **API**
+3. Copie:
+   - `VITE_SUPABASE_URL`: Project URL
+   - `VITE_SUPABASE_ANON_KEY`: Project API keys → anon public
+
+#### Mercado Pago
+1. Acesse [Mercado Pago Developers](https://www.mercadopago.com.br/developers/panel/credentials)
+2. Copie sua **Public Key** (use Test credentials para desenvolvimento)
+3. Configure `VITE_MERCADO_PAGO_PUBLIC_KEY` no arquivo `.env`
+
+### Executar o Projeto
+
+```bash
 # Inicie o servidor de desenvolvimento
 npm run dev
 ```
@@ -104,6 +136,25 @@ npm test
 # Gerar build de produção
 npm run build
 ```
+
+### Configuração do Backend (Webhook Handler)
+
+Para processar pagamentos, você precisa configurar o Supabase Edge Function. Veja as instruções completas em:
+
+📄 **[supabase/functions/webhook-handler/README.md](supabase/functions/webhook-handler/README.md)**
+
+Resumo dos passos:
+1. Instalar Supabase CLI: `npm install -g supabase`
+2. Linkar seu projeto: `supabase link --project-ref your-project-ref`
+3. Configurar secrets do Mercado Pago
+4. Deploy da função: `supabase functions deploy webhook-handler`
+5. Configurar webhook no painel do Mercado Pago
+
+### Deploy para Produção
+
+Para instruções completas de deployment (incluindo database setup, Edge Functions, frontend, e configuração do Mercado Pago), consulte:
+
+📄 **[DEPLOYMENT.md](DEPLOYMENT.md)**
 
 ---
 
