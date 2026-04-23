@@ -154,7 +154,19 @@ Resumo dos passos:
 
 Para instruções completas de deployment (incluindo database setup, Edge Functions, frontend, e configuração do Mercado Pago), consulte:
 
-📄 **[DEPLOYMENT.md](DEPLOYMENT.md)**
+📄 **[docs/deploy/DEPLOYMENT.md](docs/deploy/DEPLOYMENT.md)**
+
+---
+
+## 📚 Documentação
+
+Toda a documentação do projeto está organizada na pasta **[docs/](docs/)**:
+
+- 🔐 **[Autenticação](docs/auth/)** - Sistema de login, cadastro e recuperação de senha
+- 🚀 **[Deploy](docs/deploy/)** - Guias de deployment e configuração
+- 📖 **[Guias](docs/guias/)** - Documentação geral e princípios do projeto
+
+Para mais detalhes, consulte o **[índice completo da documentação](docs/README.md)**.
 
 ---
 
