@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Use VITE_APP_URL if set, otherwise fallback to window.location.origin
     const redirectUrl = import.meta.env.VITE_APP_URL || window.location.origin;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
+      redirectTo: `${redirectUrl}/reset-password`,
     });
     return { error };
   };

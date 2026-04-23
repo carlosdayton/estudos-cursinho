@@ -26,6 +26,7 @@ import LandingPage from './components/LandingPage';
 import CheckoutPage from './components/CheckoutPage';
 import SuccessPage from './components/SuccessPage';
 import AuthScreen from './components/AuthScreen';
+import ResetPasswordPage from './components/ResetPasswordPage';
 import { Plus, GraduationCap, LayoutGrid, Target, Sparkles } from 'lucide-react';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -476,6 +477,8 @@ export default function App() {
                   <AuthScreen />
                 </AuthGate>
               } />
+              
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               
               <Route path="/checkout" element={
                 <AuthGate>
