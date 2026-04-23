@@ -221,23 +221,43 @@ export default function LandingPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowLogin(true)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'rgba(255,255,255,0.6)',
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '4px'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
-                  onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                >
-                  Já tenho acesso — Fazer Login
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'rgba(255,255,255,0.6)',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '4px'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
+                    onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                  >
+                    Já tenho acesso — Fazer Login
+                  </button>
+                  
+                  <button
+                    onClick={() => navigate('/auth')}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'rgba(255,255,255,0.5)',
+                      fontSize: '0.9rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '4px'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                    onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                  >
+                    Criar conta grátis
+                  </button>
+                </div>
               )}
             </motion.div>
           ) : (

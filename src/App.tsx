@@ -25,6 +25,7 @@ import QuestoesView from './components/QuestoesView';
 import LandingPage from './components/LandingPage';
 import CheckoutPage from './components/CheckoutPage';
 import SuccessPage from './components/SuccessPage';
+import AuthScreen from './components/AuthScreen';
 import { Plus, GraduationCap, LayoutGrid, Target, Sparkles } from 'lucide-react';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -467,6 +468,12 @@ export default function App() {
               <Route path="/" element={
                 <AuthGate>
                   <LandingPage />
+                </AuthGate>
+              } />
+              
+              <Route path="/auth" element={
+                <AuthGate>
+                  <AuthScreen />
                 </AuthGate>
               } />
               
