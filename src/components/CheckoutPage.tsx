@@ -45,9 +45,8 @@ export default function CheckoutPage() {
       // Sub-task 7.4: Create payment preference
       const preference = await createPaymentPreference(email);
       
-      // Sub-task 7.7: Redirect to Mercado Pago checkout
-      // Use sandbox_init_point for test credentials, init_point for production
-      const checkoutUrl = preference.sandbox_init_point || preference.init_point;
+      // Use sandbox_init_point for local development, init_point for production
+      const checkoutUrl = import.meta.env.DEV ? preference.sandbox_init_point : preference.init_point;
       
       if (checkoutUrl) {
         window.location.href = checkoutUrl;
