@@ -17,25 +17,29 @@ import {
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { signInWithOtp, user, signOut } = useAuth();
+  const { signIn, user, signOut } = useAuth();
   const { showToast } = useToastContext();
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) {
+      showToast('Preencha email e senha', 'error');
+      return;
+    }
+    
     setIsSubmitting(true);
-    const { error } = await signInWithOtp(email);
+    const { error } = await signIn(email, password);
     setIsSubmitting(false);
     
     if (error) {
-      showToast('Erro ao enviar link. Verifique o email e tente novamente.', 'error');
+      showToast('Email ou senha incorretos', 'error');
     } else {
-      showToast('Link de acesso enviado! Verifique sua caixa de entrada.', 'success');
-      setShowLogin(false);
-      setEmail('');
+      // Sucesso - o AuthGate vai redirecionar automaticamente
+      showToast('Login realizado com sucesso!', 'success');
     }
   };
 
@@ -258,15 +262,33 @@ export default function LandingPage() {
             >
               <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '0.5rem' }}>Acessar minha conta</h3>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Enviaremos um link de acesso seguro para o seu email.
+                Entre com seu email e senha cadastrados.
               </p>
               
               <input
                 type="email"
                 required
-                placeholder="Seu email cadastrado"
+                placeholder="Seu email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                style={{
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(129,140,248,0.3)',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  fontFamily: 'Lexend, sans-serif'
+                }}
+              />
+
+              <input
+                type="password"
+                required
+                placeholder="Sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 style={{
                   padding: '1rem',
                   borderRadius: '12px',
@@ -295,7 +317,7 @@ export default function LandingPage() {
                   marginTop: '0.5rem'
                 }}
               >
-                {isSubmitting ? 'Enviando...' : 'Receber Link de Acesso'}
+                {isSubmitting ? 'Entrando...' : 'Entrar'}
               </button>
 
               <button

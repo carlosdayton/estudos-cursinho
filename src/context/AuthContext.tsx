@@ -64,16 +64,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithOtp = async (email: string) => {
+    // Use VITE_APP_URL if set, otherwise fallback to window.location.origin
+    const redirectUrl = import.meta.env.VITE_APP_URL || window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({ 
       email,
-      options: { emailRedirectTo: window.location.origin }
+      options: { emailRedirectTo: redirectUrl }
     });
     return { error };
   };
 
   const resetPassword = async (email: string) => {
+    // Use VITE_APP_URL if set, otherwise fallback to window.location.origin
+    const redirectUrl = import.meta.env.VITE_APP_URL || window.location.origin;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin,
+      redirectTo: redirectUrl,
     });
     return { error };
   };

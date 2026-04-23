@@ -51,9 +51,7 @@ function SectionSkeleton() {
 }
 
 // ─── Auth gate ────────────────────────────────────────────────────────────────
-// Bug #3 fix: also checks subscription to avoid infinite redirect loop.
-// A user with an account but no active subscription would previously be bounced
-// between AuthGate (→ /dashboard) and ProtectedRoute (→ /) indefinitely.
+// Handles authentication and subscription-based routing for public pages
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { hasActiveSubscription, loading: subLoading } = useSubscription();
@@ -81,13 +79,13 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Only redirect to /dashboard if the user is authenticated AND has an active subscription.
-  // If authenticated but without subscription, keep rendering the public page
-  // (e.g. landing, checkout) so the user can complete a purchase.
+  // If user is authenticated AND has active subscription → go to dashboard
   if (user && hasActiveSubscription) {
     return <Navigate to="/dashboard" replace />;
   }
 
+  // If user is authenticated BUT no active subscription → stay on current page
+  // This allows them to see the landing page or checkout to complete purchase
   return <>{children}</>;
 }
 
