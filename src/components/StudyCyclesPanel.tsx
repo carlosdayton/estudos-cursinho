@@ -4,6 +4,7 @@ import { Plus, Play, Pencil, Trash2, ListOrdered, RefreshCw } from 'lucide-react
 import { useStudyCycles } from '../hooks/useStudyCycles';
 import { useFocusMode } from '../context/FocusModeContext';
 import { useToastContext } from '../context/ToastContext';
+import { useNavigation } from '../context/NavigationContext';
 import { ConfirmModal } from './ConfirmModal';
 import CycleEditorModal from './CycleEditorModal';
 import type { Subject, StudyCycle } from '../utils/studyLogic';
@@ -16,6 +17,7 @@ export default function StudyCyclesPanel({ subjects }: StudyCyclesPanelProps) {
   const { cycles, saveCycle, deleteCycle } = useStudyCycles();
   const { startCycle } = useFocusMode();
   const { showToast } = useToastContext();
+  const { navigateTo } = useNavigation();
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingCycle, setEditingCycle] = useState<StudyCycle | null>(null);
@@ -80,6 +82,7 @@ export default function StudyCyclesPanel({ subjects }: StudyCyclesPanelProps) {
         subjects={subjects}
         onSave={handleSaveCycle}
         onClose={() => setEditorOpen(false)}
+        onGoToSubjects={() => navigateTo('materias')}
       />
 
       <div style={{

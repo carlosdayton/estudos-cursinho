@@ -9,6 +9,7 @@ interface CycleEditorModalProps {
   subjects: Subject[];
   onSave: (cycle: StudyCycle & { id?: string }) => void;
   onClose: () => void;
+  onGoToSubjects?: () => void;
 }
 
 export default function CycleEditorModal({
@@ -17,6 +18,7 @@ export default function CycleEditorModal({
   subjects,
   onSave,
   onClose,
+  onGoToSubjects,
 }: CycleEditorModalProps) {
   const [name, setName] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -131,6 +133,19 @@ export default function CycleEditorModal({
             }}
           />
 
+          {/* Modal wrapper — centers without relying on transform */}
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 10001,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem',
+              pointerEvents: 'none',
+            }}
+          >
           {/* Modal */}
           <motion.div
             key="modal-content"
@@ -142,11 +157,7 @@ export default function CycleEditorModal({
             exit={{ opacity: 0, scale: 0.94, y: 16 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 10001,
+              pointerEvents: 'all',
               width: '100%',
               maxWidth: '520px',
               maxHeight: '90vh',
@@ -277,9 +288,45 @@ export default function CycleEditorModal({
               </p>
 
               {subjects.length === 0 ? (
-                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', fontFamily: 'Lexend, sans-serif' }}>
-                  Nenhuma matéria cadastrada. Adicione matérias no Dashboard primeiro.
-                </p>
+                <div style={{
+                  padding: '1.5rem 1rem',
+                  textAlign: 'center',
+                  border: '1px dashed rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.02)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                }}>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Lexend, sans-serif', margin: 0, fontWeight: 600 }}>
+                    Nenhuma matéria cadastrada ainda.
+                  </p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', fontFamily: 'Lexend, sans-serif', margin: 0 }}>
+                    Adicione matérias primeiro para montar um ciclo.
+                  </p>
+                  {onGoToSubjects && (
+                    <button
+                      type="button"
+                      onClick={() => { onClose(); onGoToSubjects(); }}
+                      style={{
+                        padding: '0.5rem 1.25rem',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: '#818cf8',
+                        color: '#020617',
+                        fontSize: '12px',
+                        fontWeight: 900,
+                        fontFamily: 'Lexend, sans-serif',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 16px rgba(129,140,248,0.35)',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      Ir para Matérias
+                    </button>
+                  )}
+                </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '200px', overflowY: 'auto' }}>
                   {subjects.map((subject) => {
@@ -495,6 +542,7 @@ export default function CycleEditorModal({
               </button>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
