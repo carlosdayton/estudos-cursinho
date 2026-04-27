@@ -22,10 +22,10 @@ export default function WeeklyScheduleGrid({ schedule }: WeeklyScheduleGridProps
       }}>
         <CalendarDays size={32} style={{ color: 'rgba(255,255,255,0.2)', margin: '0 auto 0.75rem' }} />
         <p style={{ fontSize: '14px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', marginBottom: '4px' }}>
-          Nenhuma alocação gerada
+          Seu cronograma aparecerá aqui
         </p>
         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>
-          Configure as horas diárias e adicione matérias com tópicos pendentes.
+          Configure as horas que você pode estudar e adicione matérias com tópicos pendentes.
         </p>
       </div>
     );

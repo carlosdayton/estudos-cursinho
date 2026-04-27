@@ -42,8 +42,8 @@ export default function GoalConfigSection({ goal, onGoalChange }: GoalConfigSect
       <div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
           <Calendar size={14} style={{ color: urgency }} />
-          <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)' }}>
-            Data-Alvo da Prova
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>
+            Data da Prova
           </span>
         </label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -51,7 +51,7 @@ export default function GoalConfigSection({ goal, onGoalChange }: GoalConfigSect
             type="date"
             value={goal.targetDate}
             onChange={handleDateChange}
-            aria-label="Data-alvo da prova"
+            aria-label="Data da prova"
             style={{
               flex: 1,
               background:   'rgba(255,255,255,0.05)',
@@ -83,7 +83,7 @@ export default function GoalConfigSection({ goal, onGoalChange }: GoalConfigSect
         </div>
         {isExpired && (
           <p style={{ fontSize: '11px', color: '#f87171', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <AlertCircle size={12} /> A data-alvo já passou ou é hoje.
+            <AlertCircle size={12} /> A data da prova já passou ou é hoje.
           </p>
         )}
       </div>
@@ -92,11 +92,11 @@ export default function GoalConfigSection({ goal, onGoalChange }: GoalConfigSect
       <div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
           <Clock size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
-          <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)' }}>
-            Horas por Dia
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>
+            Quanto tempo você pode estudar por dia?
           </span>
           <span style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 700, color: '#818cf8' }}>
-            {total}h / semana
+            Total: {total}h/semana
           </span>
         </label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.4rem' }}>
@@ -134,6 +134,9 @@ export default function GoalConfigSection({ goal, onGoalChange }: GoalConfigSect
             </div>
           ))}
         </div>
+        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: '8px', fontStyle: 'italic' }}>
+          💡 Dica: Coloque 0 nos dias que você não pode estudar
+        </p>
       </div>
     </div>
   );
