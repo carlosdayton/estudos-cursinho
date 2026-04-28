@@ -1,5 +1,5 @@
 import { useState, useCallback, lazy, Suspense, useEffect } from 'react';
-import { useSubjects } from '../hooks/useSubjects';
+import { useSubjectsContext } from '../context/SubjectsContext';
 import { useSimulados } from '../hooks/useSimulados';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useToastContext } from '../context/ToastContext';
@@ -162,8 +162,8 @@ function EnemCountdown() {
 }
 
 export default function Dashboard() {
-  // 15.1 — useSubjects substitui useLocalStorage direto
-  const { subjects, addSubject, updateSubject, deleteSubject, updateTopic, overallProgress } = useSubjects();
+  // 15.1 — useSubjectsContext compartilha estado global de matérias
+  const { subjects, addSubject, updateSubject, deleteSubject, updateTopic, overallProgress } = useSubjectsContext();
 
   // 15.3 — useSimulados para passar ao StatsPanel
   const { simulados } = useSimulados();

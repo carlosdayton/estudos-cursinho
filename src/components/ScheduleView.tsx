@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronUp, X, Check, Plus
 } from 'lucide-react';
 import { useSchedule, DAY_NAMES, getVisibleHours } from '../hooks/useSchedule';
-import { useSubjects } from '../hooks/useSubjects';
+import { useSubjectsContext } from '../context/SubjectsContext';
 
 const ACCENT = '#a3e635';
 const DAYS_ALL = [0, 1, 2, 3, 4, 5, 6];
@@ -282,7 +282,7 @@ function AutoConfigModal({ config, setConfig, subjects, onGenerate, onClose }: A
 // ─── Main view ────────────────────────────────────────────────────────────────
 export default function ScheduleView() {
   const { config, setConfig, cells, setCell, clearAll, generateAuto, exportAsText } = useSchedule();
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   const [showAutoModal, setShowAutoModal] = useState(false);
   const [expanded, setExpanded] = useState(false);
 

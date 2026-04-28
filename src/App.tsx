@@ -6,7 +6,7 @@ import { FocusModeProvider, useFocusMode } from './context/FocusModeContext';
 import FocusModeOverlay from './components/FocusModeOverlay';
 import FocusModeButton from './components/FocusModeButton';
 import AppLayout, { type TabId } from './components/AppLayout';
-import { useSubjects } from './hooks/useSubjects';
+import { SubjectsProvider, useSubjectsContext } from './context/SubjectsContext';
 import { useSimulados } from './hooks/useSimulados';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useToastContext } from './context/ToastContext';
@@ -209,7 +209,7 @@ function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
 // ─── Individual tab views ─────────────────────────────────────────────────────
 
 function DashboardView() {
-  const { subjects, overallProgress } = useSubjects();
+  const { subjects, overallProgress } = useSubjectsContext();
   const { simulados } = useSimulados();
   const [pomodoroSessions] = useLocalStorage<number>('pomodoro-sessions-completed', 0);
 
@@ -252,7 +252,7 @@ function DashboardView() {
 }
 
 function MateriasView() {
-  const { subjects, addSubject, updateSubject, deleteSubject } = useSubjects();
+  const { subjects, addSubject, updateSubject, deleteSubject } = useSubjectsContext();
   const { showToast } = useToastContext();
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
@@ -326,7 +326,7 @@ function PomodoroView() {
 }
 
 function RevisoesView() {
-  const { subjects, updateTopic } = useSubjects();
+  const { subjects, updateTopic } = useSubjectsContext();
   return (
     <div style={PAGE_PADDING}>
       <PageHeader title="Revisões" subtitle="Tópicos pendentes e próximas revisões" />
@@ -349,7 +349,7 @@ function SimuladosView() {
 }
 
 function EstatisticasView() {
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   const { simulados } = useSimulados();
   const [pomodoroSessions] = useLocalStorage<number>('pomodoro-sessions-completed', 0);
   return (
@@ -361,7 +361,7 @@ function EstatisticasView() {
 }
 
 function CiclosView() {
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   return (
     <div style={PAGE_PADDING}>
       <PageHeader title="Ciclos de Estudo" subtitle="Organize seus ciclos de revisão" />
@@ -373,7 +373,7 @@ function CiclosView() {
 }
 
 function PlannerView() {
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   return (
     <div style={PAGE_PADDING}>
       <PageHeader title="Planner" subtitle="Planeje sua semana de estudos" />
@@ -385,7 +385,7 @@ function PlannerView() {
 }
 
 function FlashcardsView() {
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   return (
     <div style={PAGE_PADDING}>
       <PageHeader title="Flashcards" subtitle="Revise com cartões de memória" />
@@ -421,7 +421,7 @@ function TabContent({ tab }: { tab: TabId }) {
 function AppInner() {
   const { activeTab, navigateTo } = useNavigation();
   const { isFocusMode, exitFocusMode } = useFocusMode();
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   const { user, signOut } = useAuth();
 
   return (
@@ -494,7 +494,9 @@ export default function App() {
               {/* Protected routes */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <AppInner />
+                  <SubjectsProvider>
+                    <AppInner />
+                  </SubjectsProvider>
                 </ProtectedRoute>
               } />
               

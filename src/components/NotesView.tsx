@@ -5,7 +5,7 @@ import {
   Tag, ChevronDown, FileText, Check
 } from 'lucide-react';
 import { useNotes, NOTE_TAGS, type Note, type NoteTag } from '../hooks/useNotes';
-import { useSubjects } from '../hooks/useSubjects';
+import { useSubjectsContext } from '../context/SubjectsContext';
 import { useToastContext } from '../context/ToastContext';
 import { ConfirmModal } from './ConfirmModal';
 import { useNavigation } from '../context/NavigationContext';
@@ -437,7 +437,7 @@ function NoteCard({ note, subjectName, subjectColor, onEdit, onDelete, onToggleP
 // ─── Main view ────────────────────────────────────────────────────────────────
 export default function NotesView() {
   const { notes, addNote, updateNote, deleteNote, togglePin, searchNotes } = useNotes();
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   const { showToast } = useToastContext();
   const { notePreset, clearNotePreset } = useNavigation();
 

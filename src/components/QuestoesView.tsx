@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Plus, Trash2, Play, CheckCircle2, XCircle, BarChart3, ChevronLeft, Filter } from 'lucide-react';
 import { useQuestions, type Question } from '../hooks/useQuestions';
-import { useSubjects } from '../hooks/useSubjects';
+import { useSubjectsContext } from '../context/SubjectsContext';
 import { ConfirmModal } from './ConfirmModal';
 
 const ACCENT = '#f472b6';
@@ -210,7 +210,7 @@ function PracticeMode({ questions, onRecord, onExit }: {
 // ─── Main view ────────────────────────────────────────────────────────────────
 export default function QuestoesView() {
   const { questions, attempts, addQuestion, deleteQuestion, recordAttempt, getStatsBySubject } = useQuestions();
-  const { subjects } = useSubjects();
+  const { subjects } = useSubjectsContext();
   const [showAdd, setShowAdd] = useState(false);
   const [practicing, setPracticing] = useState(false);
   const [filterSubject, setFilterSubject] = useState<string>('all');

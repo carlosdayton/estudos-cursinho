@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Plus, Trash2, Trophy, Flame, CheckCircle2, BookOpen, Timer, BarChart3, RefreshCw } from 'lucide-react';
 import { useGoals, getMondayOfWeek, type WeeklyGoal } from '../hooks/useGoals';
-import { useSubjects } from '../hooks/useSubjects';
+import { useSubjectsContext } from '../context/SubjectsContext';
 import { useSimulados } from '../hooks/useSimulados';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useRevisions } from '../hooks/useRevisions';
@@ -186,7 +186,7 @@ function AddGoalForm({ onAdd, onClose, subjects }: { onAdd: (data: Omit<WeeklyGo
 // ─── Main view ────────────────────────────────────────────────────────────────
 export default function GoalsView() {
   const { currentWeekGoals, addGoal, deleteGoal } = useGoals();
-  const { subjects, updateTopic } = useSubjects();
+  const { subjects, updateTopic } = useSubjectsContext();
   const { simulados } = useSimulados();
   const [pomodoroSessions] = useLocalStorage<number>('pomodoro-sessions-completed', 0);
   const { reviewsDue: _reviewsDue } = useRevisions(subjects, updateTopic);
