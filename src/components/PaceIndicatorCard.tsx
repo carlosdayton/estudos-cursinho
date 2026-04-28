@@ -10,49 +10,49 @@ const STATUS_CONFIG: Record<PaceStatus, {
   color: string;
   bg: string;
   border: string;
-  label: string;
+  title: string;
   message: string;
   icon: React.ReactNode;
 }> = {
   ok: {
-    color:  '#4ade80',
-    bg:     'rgba(74,222,128,0.08)',
-    border: 'rgba(74,222,128,0.25)',
-    label:  'Você está no caminho certo! 🎯',
+    color:   '#4ade80',
+    bg:      'rgba(74,222,128,0.08)',
+    border:  'rgba(74,222,128,0.25)',
+    title:   'Você está no caminho certo! 🎯',
     message: 'Continue assim e você vai conseguir estudar tudo a tempo.',
-    icon:   <TrendingUp size={18} />,
+    icon:    <TrendingUp size={18} />,
   },
   warning: {
-    color:  '#fbbf24',
-    bg:     'rgba(251,191,36,0.08)',
-    border: 'rgba(251,191,36,0.25)',
-    label:  'Atenção: Ritmo apertado ⚠️',
-    message: 'Você vai precisar estudar bastante para cobrir tudo. Considere aumentar suas horas.',
-    icon:   <AlertTriangle size={18} />,
+    color:   '#fbbf24',
+    bg:      'rgba(251,191,36,0.08)',
+    border:  'rgba(251,191,36,0.25)',
+    title:   'Atenção: ritmo um pouco apertado ⚠️',
+    message: 'Você vai precisar estudar um pouco mais por dia. Tente aumentar suas horas de estudo.',
+    icon:    <AlertTriangle size={18} />,
   },
   danger: {
-    color:  '#f87171',
-    bg:     'rgba(248,113,113,0.08)',
-    border: 'rgba(248,113,113,0.25)',
-    label:  'Cuidado: Muito conteúdo! 🚨',
-    message: 'Vai ser difícil estudar tudo. Aumente suas horas ou ajuste a data da prova.',
-    icon:   <XCircle size={18} />,
+    color:   '#f87171',
+    bg:      'rgba(248,113,113,0.08)',
+    border:  'rgba(248,113,113,0.25)',
+    title:   'Cuidado: ritmo muito apertado! 🚨',
+    message: 'Você tem muitos tópicos para estudar. Considere aumentar suas horas ou revisar suas prioridades.',
+    icon:    <XCircle size={18} />,
   },
   completed: {
-    color:  '#a78bfa',
-    bg:     'rgba(167,139,250,0.08)',
-    border: 'rgba(167,139,250,0.25)',
-    label:  'Parabéns! Tudo coberto! 🎉',
-    message: 'Você já estudou todos os tópicos. Continue revisando para fixar o conteúdo.',
-    icon:   <CheckCircle size={18} />,
+    color:   '#a78bfa',
+    bg:      'rgba(167,139,250,0.08)',
+    border:  'rgba(167,139,250,0.25)',
+    title:   'Parabéns! Tudo coberto! 🎉',
+    message: 'Você já estudou todos os tópicos. Continue revisando para manter o conhecimento fresco.',
+    icon:    <CheckCircle size={18} />,
   },
   expired: {
-    color:  'rgba(255,255,255,0.3)',
-    bg:     'rgba(255,255,255,0.03)',
-    border: 'rgba(255,255,255,0.1)',
-    label:  'Data Expirada',
-    message: 'A data da prova já passou. Configure uma nova data acima.',
-    icon:   <Clock size={18} />,
+    color:   'rgba(255,255,255,0.3)',
+    bg:      'rgba(255,255,255,0.03)',
+    border:  'rgba(255,255,255,0.1)',
+    title:   'Data da prova já passou',
+    message: 'Configure uma nova data para continuar planejando seus estudos.',
+    icon:    <Clock size={18} />,
   },
 };
 
@@ -93,29 +93,43 @@ export default function PaceIndicatorCard({ pace }: PaceIndicatorCardProps) {
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: '14px', fontWeight: 800, color: cfg.color, margin: 0, marginBottom: '4px' }}>
-            {cfg.label}
+            {cfg.title}
           </p>
-          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.4 }}>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.5 }}>
             {cfg.message}
           </p>
         </div>
       </div>
 
-      {/* Stats row */}
+      {/* Stats row - simplified */}
       {pace.status !== 'expired' && pace.status !== 'completed' && (
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <StatChip label="Tópicos restantes" value={pace.remainingTopics} color={cfg.color} />
-          <StatChip label="Dias para estudar" value={pace.studyDaysLeft} color={cfg.color} />
+        <div style={{ marginTop: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <StatChip 
+            label="Tópicos restantes" 
+            value={pace.remainingTopics} 
+            color={cfg.color} 
+          />
+          <StatChip 
+            label="Dias para estudar" 
+            value={pace.studyDaysLeft} 
+            color={cfg.color} 
+          />
+          <StatChip 
+            label="Tópicos por dia" 
+            value={pace.topicsPerStudyDay === Infinity ? '∞' : pace.topicsPerStudyDay.toFixed(1)} 
+            color={cfg.color} 
+          />
         </div>
       )}
     </motion.div>
   );
 }
 
-function StatChip({ label, value, color }: { label: string; value: number; color: string }) {
+function StatChip({ label, value, color }: { label: string; value: number | string; color: string }) {
   return (
     <div style={{
-      flex: 1,
+      flex: '1 1 auto',
+      minWidth: '100px',
       background: 'rgba(255,255,255,0.04)',
       border: '1px solid rgba(255,255,255,0.08)',
       borderRadius: '12px',

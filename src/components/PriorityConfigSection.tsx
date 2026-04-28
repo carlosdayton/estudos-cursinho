@@ -8,16 +8,17 @@ interface PriorityConfigSectionProps {
   onPriorityChange: (subjectId: string, patch: Partial<SubjectPriority>) => void;
 }
 
-const PRIORITY_OPTIONS: { value: PriorityLevel; label: string; color: string }[] = [
-  { value: 'média', label: 'Normal', color: '#818cf8' },
-  { value: 'alta',  label: 'Prioritária',  color: '#f87171' },
+const PRIORITY_OPTIONS: { value: PriorityLevel; label: string; color: string; description: string }[] = [
+  { value: 'baixa', label: 'Normal', color: '#4ade80', description: 'Estudar menos' },
+  { value: 'média', label: 'Importante', color: '#fbbf24', description: 'Estudar mais' },
+  { value: 'alta',  label: 'Prioritária',  color: '#f87171', description: 'Focar bastante' },
 ];
 
 export default function PriorityConfigSection({ subjects, priorities, onPriorityChange }: PriorityConfigSectionProps) {
   if (subjects.length === 0) {
     return (
       <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', textAlign: 'center', padding: '1rem 0' }}>
-        Nenhuma matéria cadastrada. Adicione matérias na aba "Matérias" para começar.
+        Nenhuma matéria cadastrada.
       </p>
     );
   }
@@ -38,11 +39,11 @@ export default function PriorityConfigSection({ subjects, priorities, onPriority
               display:      'flex',
               alignItems:   'center',
               gap:          '0.75rem',
-              justifyContent: 'space-between',
+              flexWrap:     'wrap',
             }}
           >
             {/* Subject color dot + name */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1', minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 140px', minWidth: 0 }}>
               <div style={{
                 width: '10px', height: '10px', borderRadius: '50%',
                 background: subject.color, flexShrink: 0,
@@ -53,8 +54,8 @@ export default function PriorityConfigSection({ subjects, priorities, onPriority
               </span>
             </div>
 
-            {/* Priority selector */}
-            <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '3px' }}>
+            {/* Priority selector - simplified */}
+            <div style={{ display: 'flex', gap: '0.4rem', flex: '0 0 auto' }}>
               {PRIORITY_OPTIONS.map(opt => {
                 const active = opt.value === p.priority;
                 return (
@@ -62,13 +63,14 @@ export default function PriorityConfigSection({ subjects, priorities, onPriority
                     key={opt.value}
                     onClick={() => onPriorityChange(subject.id, { priority: opt.value as PriorityLevel })}
                     aria-pressed={active}
-                    aria-label={`Prioridade: ${opt.label}`}
+                    aria-label={`${opt.label}: ${opt.description}`}
+                    title={opt.description}
                     style={{
-                      padding:      '6px 14px',
-                      borderRadius: '8px',
+                      padding:      '0.5rem 0.9rem',
+                      borderRadius: '10px',
                       border:       'none',
-                      background:   active ? `${opt.color}22` : 'transparent',
-                      color:        active ? opt.color : 'rgba(255,255,255,0.4)',
+                      background:   active ? `${opt.color}22` : 'rgba(255,255,255,0.05)',
+                      color:        active ? opt.color : 'rgba(255,255,255,0.3)',
                       fontSize:     '11px',
                       fontWeight:   active ? 800 : 600,
                       fontFamily:   'Lexend, sans-serif',
