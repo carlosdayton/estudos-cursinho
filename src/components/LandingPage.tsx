@@ -202,7 +202,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                 {/* Botão Plano Mensal */}
                 <button
-                  onClick={() => {/* Link Wiapy - Plano Mensal */}}
+                  onClick={() => window.open('https://pay.wiapy.com/vJ7j6LdCvnX', '_blank')}
                   style={{
                     display: 'inline-flex',
                     flexDirection: 'column',
@@ -237,7 +237,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
 
                 {/* Botão Plano Anual */}
                 <button
-                  onClick={() => {/* Link Wiapy - Plano Anual */}}
+                  onClick={() => alert('O plano anual estará disponível em breve. Assine o plano mensal para acesso imediato!')}
                   style={{
                     display: 'inline-flex',
                     flexDirection: 'column',
@@ -657,7 +657,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
           {/* Botão Plano Mensal */}
           <button
-            onClick={() => {/* Link Wiapy - Plano Mensal */}}
+            onClick={() => window.open('https://pay.wiapy.com/vJ7j6LdCvnX', '_blank')}
             style={{
               display: 'inline-flex',
               flexDirection: 'column',
@@ -692,7 +692,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
 
           {/* Botão Plano Anual */}
           <button
-            onClick={() => {/* Link Wiapy - Plano Anual */}}
+            onClick={() => alert('O plano anual estará disponível em breve. Assine o plano mensal para acesso imediato!')}
             style={{
               display: 'inline-flex',
               flexDirection: 'column',
