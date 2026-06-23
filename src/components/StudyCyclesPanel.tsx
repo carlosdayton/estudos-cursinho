@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Play, Pencil, Trash2, ListOrdered, RefreshCw } from 'lucide-react';
 import { useStudyCycles } from '../hooks/useStudyCycles';
@@ -13,7 +13,7 @@ interface StudyCyclesPanelProps {
   subjects: Subject[];
 }
 
-export default function StudyCyclesPanel({ subjects }: StudyCyclesPanelProps) {
+const StudyCyclesPanel = memo(function StudyCyclesPanel({ subjects }: StudyCyclesPanelProps) {
   const { cycles, saveCycle, deleteCycle } = useStudyCycles();
   const { startCycle } = useFocusMode();
   const { showToast } = useToastContext();
@@ -307,4 +307,6 @@ export default function StudyCyclesPanel({ subjects }: StudyCyclesPanelProps) {
       </div>
     </>
   );
-}
+});
+
+export default StudyCyclesPanel;

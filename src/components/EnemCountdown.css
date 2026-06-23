@@ -1,0 +1,173 @@
+/* ─── Foco ENEM — EnemCountdown (Purple Glassmorphism) ──────────────────────── */
+
+.enem-countdown {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+}
+
+.enem-countdown::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #818cf8, transparent);
+}
+
+.countdown-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.countdown-icon-box {
+  width: 36px;
+  height: 36px;
+  background: rgba(129, 140, 248, 0.15);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+}
+
+.countdown-label-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.countdown-label-top {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.countdown-label-bottom {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.countdown-big-number {
+  text-align: center;
+}
+
+.big-number-val {
+  font-size: clamp(3rem, 5vw, 4rem);
+  font-weight: 900;
+  color: #818cf8;
+  line-height: 1;
+  display: block;
+  letter-spacing: -0.03em;
+}
+
+.big-number-label {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.25rem;
+}
+
+.live-ticker {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+}
+
+.ticker-segment {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.ticker-colon {
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-right: 4px;
+}
+
+.ticker-val {
+  font-family: 'Lexend', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticker-label {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+}
+
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress-label {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.progress-label.highlight {
+  color: #818cf8;
+}
+
+.progress-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 99px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8, #a855f7);
+  border-radius: 99px;
+}
+
+.countdown-quote {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.75rem;
+}

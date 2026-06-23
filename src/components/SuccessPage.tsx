@@ -309,7 +309,7 @@ export default function SuccessPage() {
           fontSize: '0.875rem'
         }}
       >
-        <p>© 2024 Foco ENEM. Todos os direitos reservados.</p>
+        <p>© 2025 Foco ENEM. Todos os direitos reservados.</p>
       </motion.footer>
     </div>
   );

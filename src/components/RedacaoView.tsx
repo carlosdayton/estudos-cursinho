@@ -219,20 +219,20 @@ function APIKeyConfig({ apiKey, onSave, onClose }: { apiKey: string; onSave: (k:
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Key size={16} color="#e879f9" />
-          <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>Chave da API OpenAI</span>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>Chave da API Groq</span>
         </div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex' }}>
           <X size={16} />
         </button>
       </div>
       <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.5 }}>
-        Sua chave é salva apenas no seu navegador (localStorage) e nunca enviada para nossos servidores. Obtenha em <span style={{ color: '#e879f9' }}>platform.openai.com</span>
+        Sua chave é salva apenas no seu navegador (localStorage) e nunca enviada para nossos servidores. Obtenha em <span style={{ color: '#e879f9' }}>console.groq.com</span>
       </p>
       <input
         type="password"
         value={value}
         onChange={e => setValue(e.target.value)}
-        placeholder="sk-..."
+        placeholder="gsk-..."
         style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.75rem 1rem', color: '#fff', fontSize: '13px', fontFamily: 'Lexend, sans-serif', outline: 'none', width: '100%', boxSizing: 'border-box' }}
       />
       <div style={{ display: 'flex', gap: '0.75rem' }}>

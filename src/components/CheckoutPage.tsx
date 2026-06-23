@@ -239,6 +239,47 @@ export default function CheckoutPage() {
             Pagamento único • Acesso para sempre
           </p>
         </div>
+        {/* What you get */}
+        <div style={{
+          marginBottom: '2rem',
+          padding: '1.25rem',
+          background: 'rgba(255,255,255,0.03)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255,255,255,0.08)'
+        }}>
+          <p style={{
+            fontSize: '0.75rem',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'rgba(255,255,255,0.4)',
+            marginBottom: '0.75rem'
+          }}>
+            O que você recebe
+          </p>
+          {[
+            'Cronograma inteligente de estudos',
+            'Banco de questões com gabarito',
+            'Simulados com análise por área',
+            'Redação com avaliação por IA',
+            'Flashcards com repetição espaçada',
+            'Pomodoro Timer integrado',
+            'Estatísticas e progresso em tempo real',
+          ].map(item => (
+            <div key={item} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.35rem 0',
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '0.875rem',
+              fontWeight: 600
+            }}>
+              <span style={{ color: '#10b981', fontSize: '1rem', flexShrink: 0 }}>✓</span>
+              {item}
+            </div>
+          ))}
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>

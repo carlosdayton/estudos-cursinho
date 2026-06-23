@@ -9,7 +9,7 @@ import { useToastContext } from '../context/ToastContext';
 interface Props {
   subject: Subject;
   onUpdateSubject: (updated: Subject) => void;
-  onDeleteSubject: () => void;
+  onDeleteSubject: (id: string) => void;
 }
 
 function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
@@ -108,7 +108,7 @@ function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
           {/* Actions */}
           <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
             <button
-              onClick={onDeleteSubject}
+              onClick={() => onDeleteSubject(subject.id)}
               onMouseEnter={() => setHoverDelete(true)}
               onMouseLeave={() => setHoverDelete(false)}
               aria-label={`Excluir matéria ${subject.name}`}

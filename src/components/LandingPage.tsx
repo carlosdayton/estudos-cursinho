@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToastContext } from '../context/ToastContext';
 import { 
@@ -15,15 +15,21 @@ import {
   Zap
 } from 'lucide-react';
 
-export default function LandingPage() {
+export default function LandingPage({ showLoginInitially = false }: { showLoginInitially?: boolean }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, resetPassword, user, signOut } = useAuth();
   const { showToast } = useToastContext();
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(showLoginInitially || location.pathname === '/login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+
+  // Sync form visibility with route
+  useEffect(() => {
+    setShowLogin(location.pathname === '/login');
+  }, [location.pathname]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,6 +186,7 @@ export default function LandingPage() {
           Sua plataforma completa de estudos para conquistar a aprovação no ENEM
         </motion.p>
 
+
         {/* Dynamic CTA / Login Section */}
         <AnimatePresence mode="wait">
           {!showLogin ? (
@@ -191,38 +198,80 @@ export default function LandingPage() {
               transition={{ delay: 0.5, duration: 0.6 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}
             >
-              <button
-                onClick={() => navigate('/checkout')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '1.25rem 3rem',
-                  borderRadius: '16px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #818cf8, #6366f1)',
-                  color: '#fff',
-                  fontSize: '1.125rem',
-                  fontWeight: 800,
-                  fontFamily: 'Lexend, sans-serif',
-                  letterSpacing: '0.02em',
-                  textTransform: 'uppercase',
-                  boxShadow: '0 10px 30px rgba(129,140,248,0.4)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(129,140,248,0.5)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(129,140,248,0.4)';
-                }}
-              >
-                <Zap size={24} fill="currentColor" />
-                {user ? 'Completar Assinatura' : 'Assinar Agora'}
-              </button>
+              {/* Plano Buttons */}
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {/* Botão Plano Mensal */}
+                <button
+                  onClick={() => {/* Link Wiapy - Plano Mensal */}}
+                  style={{
+                    display: 'inline-flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '1rem 2rem',
+                    borderRadius: '16px',
+                    border: '2px solid rgba(129,140,248,0.5)',
+                    cursor: 'pointer',
+                    background: 'rgba(129,140,248,0.1)',
+                    color: '#fff',
+                    fontFamily: 'Lexend, sans-serif',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'rgba(129,140,248,0.2)';
+                    e.currentTarget.style.borderColor = '#818cf8';
+                    e.currentTarget.style.transform = 'scale(1.03)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'rgba(129,140,248,0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(129,140,248,0.5)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Plano Mensal</span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#818cf8', letterSpacing: '-0.02em' }}>R$ 37,90<span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>/mês</span></span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: '#818cf8', marginTop: '2px' }}>
+                    <Zap size={14} fill="currentColor" /> Assinar Mensal
+                  </span>
+                </button>
+
+                {/* Botão Plano Anual */}
+                <button
+                  onClick={() => {/* Link Wiapy - Plano Anual */}}
+                  style={{
+                    display: 'inline-flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '1rem 2rem',
+                    borderRadius: '16px',
+                    border: '2px solid rgba(16,185,129,0.6)',
+                    cursor: 'pointer',
+                    background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))',
+                    color: '#fff',
+                    fontFamily: 'Lexend, sans-serif',
+                    boxShadow: '0 8px 24px rgba(16,185,129,0.2)',
+                    transition: 'all 0.3s ease',
+                    position: 'relative'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(16,185,129,0.1))';
+                    e.currentTarget.style.boxShadow = '0 16px 36px rgba(16,185,129,0.35)';
+                    e.currentTarget.style.transform = 'scale(1.03)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(16,185,129,0.2)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Plano Anual</span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10b981', letterSpacing: '-0.02em' }}>R$ 397,00<span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>/ano</span></span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: '#10b981', marginTop: '2px' }}>
+                    <Zap size={14} fill="currentColor" /> Assinar Anual
+                  </span>
+                </button>
+              </div>
 
               {user ? (
                 <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
@@ -244,43 +293,23 @@ export default function LandingPage() {
                   </button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
-                  <button
-                    onClick={() => setShowLogin(true)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'rgba(255,255,255,0.6)',
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '4px'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
-                    onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                  >
-                    Já tenho acesso — Fazer Login
-                  </button>
-                  
-                  <button
-                    onClick={() => navigate('/auth')}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'rgba(255,255,255,0.5)',
-                      fontSize: '0.9rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      textUnderlineOffset: '4px'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
-                    onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-                  >
-                    Criar conta grátis
-                  </button>
-                </div>
+                <button
+                  onClick={() => navigate('/login')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.6)',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '4px'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.color = '#fff'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                >
+                  Já tenho acesso — Fazer Login
+                </button>
               )}
             </motion.div>
           ) : (
@@ -390,7 +419,7 @@ export default function LandingPage() {
 
               <button
                 type="button"
-                onClick={() => setShowLogin(false)}
+                onClick={() => navigate('/')}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -525,6 +554,57 @@ export default function LandingPage() {
         </div>
       </motion.div>
 
+      {/* Why Foco ENEM */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.1, duration: 0.8 }}
+        style={{
+          maxWidth: '1200px',
+          width: '100%',
+          marginBottom: '3rem'
+        }}
+      >
+        <h2 style={{
+          fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+          fontWeight: 900,
+          color: '#fff',
+          textAlign: 'center',
+          marginBottom: '2rem',
+          letterSpacing: '-0.02em'
+        }}>
+          Por que escolher o Foco ENEM?
+        </h2>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '1.25rem'
+        }}>
+          {[
+            { emoji: '🧠', title: 'Redação com IA', desc: 'Avaliação automática com feedback detalhado por competência' },
+            { emoji: '🔄', title: 'Revisão Espaçada', desc: 'Algoritmo que avisa quando revisar cada tópico' },
+            { emoji: '📊', title: 'Análise de Simulados', desc: 'Gráficos de evolução por área do conhecimento' },
+            { emoji: '🔓', title: 'Cancele Quando Quiser', desc: 'Sem fidelidade. Cancele a qualquer momento, sem complicação.' },
+          ].map((item) => (
+            <div
+              key={item.title}
+              style={{
+                background: 'rgba(16,185,129,0.06)',
+                border: '1px solid rgba(16,185,129,0.2)',
+                borderRadius: '20px',
+                padding: '1.5rem',
+                textAlign: 'center'
+              }}
+            >
+              <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.75rem' }}>{item.emoji}</span>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', marginBottom: '0.5rem' }}>{item.title}</h3>
+              <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5, margin: 0 }}>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Bottom CTA Section */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -568,38 +648,109 @@ export default function LandingPage() {
         <p style={{
           fontSize: 'clamp(1rem, 2.5vw, 1.125rem)',
           color: 'rgba(255,255,255,0.7)',
-          marginBottom: '2rem',
+          marginBottom: '1.5rem',
           lineHeight: 1.6
         }}>
-          Junte-se a milhares de estudantes que estão conquistando seus objetivos
+          A partir de <strong style={{ color: '#818cf8' }}>R$ 37,90/mês</strong> ou <strong style={{ color: '#10b981' }}>R$ 397,00/ano</strong> — cancele quando quiser
         </p>
 
-        <motion.button
-          whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(129,140,248,0.5)' }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/checkout')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '1.25rem 3rem',
-            borderRadius: '16px',
-            border: 'none',
-            cursor: 'pointer',
-            background: 'linear-gradient(135deg, #818cf8, #6366f1)',
-            color: '#fff',
-            fontSize: '1.125rem',
-            fontWeight: 800,
-            fontFamily: 'Lexend, sans-serif',
-            letterSpacing: '0.02em',
-            textTransform: 'uppercase',
-            boxShadow: '0 10px 30px rgba(129,140,248,0.4)',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <Zap size={24} fill="currentColor" />
-          Começar Agora
-        </motion.button>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          {/* Botão Plano Mensal */}
+          <button
+            onClick={() => {/* Link Wiapy - Plano Mensal */}}
+            style={{
+              display: 'inline-flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '1rem 2rem',
+              borderRadius: '16px',
+              border: '2px solid rgba(129,140,248,0.5)',
+              cursor: 'pointer',
+              background: 'rgba(129,140,248,0.1)',
+              color: '#fff',
+              fontFamily: 'Lexend, sans-serif',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(129,140,248,0.2)';
+              e.currentTarget.style.borderColor = '#818cf8';
+              e.currentTarget.style.transform = 'scale(1.03)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(129,140,248,0.1)';
+              e.currentTarget.style.borderColor = 'rgba(129,140,248,0.5)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Plano Mensal</span>
+            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#818cf8', letterSpacing: '-0.02em' }}>R$ 37,90<span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>/mês</span></span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: '#818cf8', marginTop: '2px' }}>
+              <Zap size={14} fill="currentColor" /> Assinar Mensal
+            </span>
+          </button>
+
+          {/* Botão Plano Anual */}
+          <button
+            onClick={() => {/* Link Wiapy - Plano Anual */}}
+            style={{
+              display: 'inline-flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '1rem 2rem',
+              borderRadius: '16px',
+              border: '2px solid rgba(16,185,129,0.6)',
+              cursor: 'pointer',
+              background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))',
+              color: '#fff',
+              fontFamily: 'Lexend, sans-serif',
+              boxShadow: '0 8px 24px rgba(16,185,129,0.2)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(16,185,129,0.1))';
+              e.currentTarget.style.boxShadow = '0 16px 36px rgba(16,185,129,0.35)';
+              e.currentTarget.style.transform = 'scale(1.03)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(16,185,129,0.2)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Plano Anual</span>
+            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10b981', letterSpacing: '-0.02em' }}>R$ 397,00<span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>/ano</span></span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: '#10b981', marginTop: '2px' }}>
+              <Zap size={14} fill="currentColor" /> Assinar Anual
+            </span>
+          </button>
+        </div>
+
+        {/* Trust badges */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '1.5rem',
+          flexWrap: 'wrap',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          paddingTop: '1.25rem'
+        }}>
+          {[
+            '🔒 Pagamento Seguro',
+            '⚡ Acesso Imediato',
+            '🔄 Renovação Automática',
+          ].map(badge => (
+            <span key={badge} style={{
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.45)',
+              letterSpacing: '0.02em'
+            }}>
+              {badge}
+            </span>
+          ))}
+        </div>
       </motion.div>
 
       {/* Footer */}
@@ -617,7 +768,7 @@ export default function LandingPage() {
           fontSize: '0.875rem'
         }}
       >
-        <p>© 2024 Foco ENEM. Todos os direitos reservados.</p>
+        <p>© 2025 Foco ENEM. Todos os direitos reservados.</p>
       </motion.footer>
     </div>
   );

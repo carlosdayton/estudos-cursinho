@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Trophy } from 'lucide-react';
 import type { Subject } from '../utils/studyLogic';
@@ -11,7 +12,7 @@ interface StudyPlannerPanelProps {
   subjects: Subject[];
 }
 
-export default function StudyPlannerPanel({ subjects }: StudyPlannerPanelProps) {
+const StudyPlannerPanel = memo(function StudyPlannerPanel({ subjects }: StudyPlannerPanelProps) {
   const { goal, priorities, schedule, pace, setTargetDate, setDailyHours, setPriority } = useStudyPlanning(subjects);
 
   const allCompleted = pace.status === 'completed';
@@ -124,7 +125,9 @@ export default function StudyPlannerPanel({ subjects }: StudyPlannerPanelProps) 
       </div>
     </div>
   );
-}
+});
+
+export default StudyPlannerPanel;
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 

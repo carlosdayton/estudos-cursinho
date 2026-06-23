@@ -1,0 +1,311 @@
+/* ─── Foco ENEM — Dashboard CSS (Purple Glassmorphism) ──────────────────────── */
+
+.dashboard-root {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 8rem;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────────── */
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.dashboard-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.dashboard-logo {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 0 48px rgba(99, 102, 241, 0.5);
+}
+
+.dashboard-title {
+  font-family: 'Lexend', sans-serif;
+  font-size: clamp(2.5rem, 7vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #ffffff;
+}
+
+/* ─── Progress Card ──────────────────────────────────────────────────────────── */
+.overall-progress-card {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2rem 3rem;
+  width: 100%;
+  max-width: 520px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.overall-progress-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #818cf8, transparent);
+}
+
+.overall-progress-label {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 1rem;
+}
+
+.overall-progress-value-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.overall-progress-value {
+  font-family: 'Lexend', sans-serif;
+  font-size: clamp(4rem, 12vw, 6rem);
+  font-weight: 900;
+  color: #818cf8;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.overall-progress-percent {
+  font-family: 'Lexend', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.overall-progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.overall-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8, #a855f7);
+  border-radius: 99px;
+}
+
+/* ─── New Subject Button ──────────────────────────────────────────────────────── */
+.btn-new-subject {
+  height: 52px;
+  padding: 0 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: 'Lexend', sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #818cf8, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+  transition: all 0.25s ease;
+}
+
+.btn-new-subject:hover {
+  background: linear-gradient(135deg, #a5b4fc, #818cf8);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ─── New Subject Form ───────────────────────────────────────────────────────── */
+.new-subject-form-wrapper {
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.1);
+}
+
+.new-subject-form-label {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #818cf8;
+}
+
+.new-subject-input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.new-subject-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.new-subject-input:focus {
+  border-color: rgba(129, 140, 248, 0.5);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+}
+
+.new-subject-input::placeholder {
+  color: rgba(255,255,255,0.25);
+}
+
+.btn-new-subject-cancel {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-new-subject-cancel:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  border-color: rgba(255,255,255,0.2);
+}
+
+.btn-new-subject-submit {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #818cf8, #6366f1);
+  color: #fff;
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.btn-new-subject-submit:hover {
+  background: linear-gradient(135deg, #a5b4fc, #818cf8);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ─── Dashboard layout helpers ───────────────────────────────────────────────── */
+.dashboard-actions-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.dashboard-top-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+  padding: 1rem 0;
+}
+
+.dashboard-divider {
+  padding: 2rem 0;
+}
+
+.dashboard-divider-line {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+}
+
+.dashboard-lazy-section {
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px dashed rgba(255,255,255,0.06);
+}
+
+.dashboard-lazy-container {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+/* ─── Empty State ────────────────────────────────────────────────────────────── */
+.empty-subjects-placeholder {
+  grid-column: 1 / -1;
+  padding: 4rem 2rem;
+  text-align: center;
+  border: 1px dashed rgba(255,255,255,0.08);
+  border-radius: 24px;
+  background: rgba(255,255,255,0.02);
+}
+
+.empty-subjects-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  margin: 0 auto 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.2);
+}
+
+.empty-subjects-title {
+  font-family: 'Lexend', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 0.5rem;
+}
+
+.empty-subjects-subtitle {
+  font-family: 'Lexend', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.2);
+}

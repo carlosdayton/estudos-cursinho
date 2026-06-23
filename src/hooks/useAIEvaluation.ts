@@ -62,13 +62,15 @@ Responda APENAS com um JSON válido no seguinte formato, sem markdown, sem texto
 }`;
 
 export function useAIEvaluation(): UseAIEvaluationReturn {
-  const [apiKey, setApiKey] = useLocalStorage<string>('openai-api-key', '');
+  const [apiKey, setApiKey] = useLocalStorage<string>('groq-api-key', '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const activeApiKey = apiKey.trim() || (import.meta.env.VITE_GROQ_API_KEY || '').trim();
+
   const evaluate = useCallback(async (theme: string, content: string): Promise<AIFeedback | null> => {
-    if (!apiKey.trim()) {
-      setError('Configure sua chave da API OpenAI nas configurações.');
+    if (!activeApiKey) {
+      setError('Configure sua chave da API do Groq nas configurações.');
       return null;
     }
     if (!content.trim() || content.trim().split(/\s+/).length < 30) {
@@ -85,14 +87,14 @@ Redação:
 ${content}`;
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey.trim()}`,
+          'Authorization': `Bearer ${activeApiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'llama-3.3-70b-versatile',
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: userMessage },
@@ -104,10 +106,9 @@ ${content}`;
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        if (response.status === 401) throw new Error('Chave de API inválida. Verifique sua chave OpenAI.');
-        if (response.status === 429) throw new Error('Limite de requisições atingido. Aguarde um momento e tente novamente.');
-        if (response.status === 402) throw new Error('Créditos insuficientes na conta OpenAI.');
-        throw new Error(err?.error?.message ?? `Erro ${response.status} na API OpenAI.`);
+        if (response.status === 401) throw new Error('Chave de API inválida. Verifique sua chave do Groq.');
+        if (response.status === 429) throw new Error('Limite de requisições atingido no Groq. Aguarde um momento e tente novamente.');
+        throw new Error(err?.error?.message ?? `Erro ${response.status} na API do Groq.`);
       }
 
       const data = await response.json();
@@ -132,13 +133,13 @@ ${content}`;
         c5: clamp(parsed.c5),
       };
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido ao chamar a IA.';
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido ao chamar a IA do Groq.';
       setError(msg);
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, [apiKey]);
+  }, [activeApiKey]);
 
   const clearError = useCallback(() => setError(null), []);
 

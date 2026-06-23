@@ -1,15 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 :root {
+  /* Legacy Variables - To be phased out */
   --primary: #818cf8;
   --primary-hover: #6366f1;
-  --bg-dark: #020617;
-  --bg-gradient: radial-gradient(circle at top right, #1e1b4b, #020617 60%);
+  --bg-gradient: none;
   --card-bg: rgba(30, 41, 59, 0.4);
   --glass-border: rgba(255, 255, 255, 0.2);
   --glass-glow: rgba(255, 255, 255, 0.1);
-  --text-main: #ffffff;
-  --text-muted: #ffffff;
   --accent-math: #ffffff;
   --accent-bio: #ffffff;
   --accent-phys: #ffffff;
@@ -18,6 +17,21 @@
   --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   --gap-section: 4rem;
   --gap-grid: 2.5rem;
+
+  /* Purple Glassmorphism Variables */
+  --bg-dark: #0f172a;
+  --surface: rgba(30, 41, 59, 0.6);
+  --surface-hover: rgba(30, 41, 59, 0.8);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --accent: #818cf8;
+  --accent-deep: #6366f1;
+  --text-main: #FFFFFF;
+  --text-muted: rgba(255, 255, 255, 0.45);
+  
+  --bg-gradient: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.12) 0%, transparent 60%),
+                 radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.08) 0%, transparent 50%);
+
+  --font-display: 'Lexend', sans-serif;
 }
 
 * {
@@ -35,7 +49,6 @@ body {
   font-family: 'Lexend', sans-serif;
   background: var(--bg-dark);
   background-image: var(--bg-gradient);
-  background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   line-height: 1.6;
@@ -71,7 +84,7 @@ body {
 }
 
 .glass-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-3px);
   background: rgba(30, 41, 59, 0.5);
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7);
@@ -124,7 +137,7 @@ h1 {
 
 .input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--primary);
   background: rgba(15, 23, 42, 0.8);
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
 }
