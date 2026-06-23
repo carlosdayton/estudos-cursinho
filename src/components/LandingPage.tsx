@@ -202,7 +202,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                 {/* Botão Plano Mensal */}
                 <button
-                  onClick={() => window.open('https://pay.wiapy.com/vJ7j6LdCvnX', '_blank')}
+                  onClick={() => window.location.href = 'https://pay.wiapy.com/vJ7j6LdCvnX'}
                   style={{
                     display: 'inline-flex',
                     flexDirection: 'column',
@@ -237,7 +237,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
 
                 {/* Botão Plano Anual */}
                 <button
-                  onClick={() => window.open('https://pay.wiapy.com/8v5AGtDRHSw', '_blank')}
+                  onClick={() => window.location.href = 'https://pay.wiapy.com/8v5AGtDRHSw'}
                   style={{
                     display: 'inline-flex',
                     flexDirection: 'column',
@@ -657,7 +657,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
           {/* Botão Plano Mensal */}
           <button
-            onClick={() => window.open('https://pay.wiapy.com/vJ7j6LdCvnX', '_blank')}
+            onClick={() => window.location.href = 'https://pay.wiapy.com/vJ7j6LdCvnX'}
             style={{
               display: 'inline-flex',
               flexDirection: 'column',
@@ -692,7 +692,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
 
           {/* Botão Plano Anual */}
           <button
-            onClick={() => window.open('https://pay.wiapy.com/8v5AGtDRHSw', '_blank')}
+            onClick={() => window.location.href = 'https://pay.wiapy.com/8v5AGtDRHSw'}
             style={{
               display: 'inline-flex',
               flexDirection: 'column',
