@@ -26,15 +26,13 @@ import CheckoutPage from './components/CheckoutPage';
 import SuccessPage from './components/SuccessPage';
 import AuthScreen from './components/AuthScreen';
 import ResetPasswordPage from './components/ResetPasswordPage';
-import { Plus, GraduationCap, LayoutGrid, Target } from 'lucide-react';
+import { Plus, GraduationCap, LayoutGrid } from 'lucide-react';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useSubscription } from './hooks/useSubscription';
 import EnemCountdown from './components/EnemCountdown';
 import './components/Dashboard.css';
 
-import { getDaysUntilEnem, ENEM_2026_DATE } from './utils/studyLogic';
-import { useEffect } from 'react';
 const FlashcardsPanel = lazy(() => import('./components/flashcards/FlashcardsPanel'));
 
 const SimuladosTracker = lazy(() => import('./components/SimuladosTracker'));

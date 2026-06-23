@@ -33,7 +33,7 @@ export default function EnemCountdown() {
   const sLeft = Math.floor((msLeft % (1000 * 60)) / 1000);
 
   return (
-    <div className="enem-countdown">
+    <div className="enem-countdown" data-tick={tick}>
       <div className="countdown-header">
         <div className="countdown-icon-box">
           <Target size={16} strokeWidth={2} />
