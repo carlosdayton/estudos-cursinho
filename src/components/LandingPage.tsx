@@ -237,7 +237,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
 
                 {/* Botão Plano Anual */}
                 <button
-                  onClick={() => alert('O plano anual estará disponível em breve. Assine o plano mensal para acesso imediato!')}
+                  onClick={() => window.open('https://pay.wiapy.com/8v5AGtDRHSw', '_blank')}
                   style={{
                     display: 'inline-flex',
                     flexDirection: 'column',
@@ -692,7 +692,7 @@ export default function LandingPage({ showLoginInitially = false }: { showLoginI
 
           {/* Botão Plano Anual */}
           <button
-            onClick={() => alert('O plano anual estará disponível em breve. Assine o plano mensal para acesso imediato!')}
+            onClick={() => window.open('https://pay.wiapy.com/8v5AGtDRHSw', '_blank')}
             style={{
               display: 'inline-flex',
               flexDirection: 'column',
