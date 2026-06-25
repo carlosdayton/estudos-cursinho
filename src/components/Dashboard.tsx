@@ -30,7 +30,7 @@ function SectionSkeleton() {
 }
 
 export default function Dashboard() {
-  const { subjects, addSubject, updateSubject, deleteSubject, updateTopic, overallProgress } = useSubjectsContext();
+  const { subjects, addSubject, addTopic, deleteSubject, updateTopic, removeTopic, overallProgress } = useSubjectsContext();
   const { simulados } = useSimulados();
   const [pomodoroSessions] = useLocalStorage<number>('pomodoro-sessions-completed', 0);
   const { showToast } = useToastContext();
@@ -50,11 +50,20 @@ export default function Dashboard() {
     setShowAddSubject(false);
   };
 
-  const handleUpdateSubject = useCallback(
-    (updated: Parameters<typeof updateSubject>[0]) => {
-      updateSubject(updated);
-    },
-    [updateSubject]
+
+  const handleAddTopic = useCallback(
+    (subjectId: string, name: string) => addTopic(subjectId, name),
+    [addTopic]
+  );
+
+  const handleUpdateTopic = useCallback(
+    (subjectId: string, topicId: string, patch: Parameters<typeof updateTopic>[2]) => updateTopic(subjectId, topicId, patch),
+    [updateTopic]
+  );
+
+  const handleRemoveTopic = useCallback(
+    (subjectId: string, topicId: string) => removeTopic(subjectId, topicId),
+    [removeTopic]
   );
 
   const handleRequestDelete = useCallback((id: string) => {
@@ -197,7 +206,9 @@ export default function Dashboard() {
             <ErrorBoundary key={subject.id}>
               <SubjectCard
                 subject={subject}
-                onUpdateSubject={handleUpdateSubject}
+                onAddTopic={(name) => handleAddTopic(subject.id, name)}
+                onUpdateTopic={(topicId, patch) => handleUpdateTopic(subject.id, topicId, patch)}
+                onRemoveTopic={(topicId) => handleRemoveTopic(subject.id, topicId)}
                 onDeleteSubject={handleRequestDelete}
               />
             </ErrorBoundary>

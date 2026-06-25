@@ -71,6 +71,7 @@ export interface UseSubjectsReturn {
   subjects: Subject[];
   loading: boolean;
   addSubject: (name: string) => Promise<void>;
+  addTopic: (subjectId: string, name: string) => Promise<void>;
   updateSubject: (updated: Subject) => Promise<void>;
   deleteSubject: (id: string) => Promise<void>;
   updateTopic: (subjectId: string, topicId: string, patch: Partial<Topic>) => Promise<void>;
@@ -119,6 +120,27 @@ export function useSubjects(): UseSubjectsReturn {
         targetTopics: data.target_topics ?? undefined,
         topics: [],
       }]);
+    }
+  }, [user]);
+
+  const addTopic = useCallback(async (subjectId: string, name: string) => {
+    if (!user || !name.trim()) return;
+    const { data } = await supabase.from('topics').insert({
+      user_id: user.id,
+      subject_id: subjectId,
+      name: name.trim(),
+      is_studied: false,
+      is_exercises_done: false,
+    }).select('*').single();
+    if (data) {
+      const newTopic = toTopic(data as DbTopic);
+      setSubjects(prev =>
+        prev.map(s =>
+          s.id === subjectId
+            ? { ...s, topics: [...s.topics, newTopic] }
+            : s
+        )
+      );
     }
   }, [user]);
 
@@ -196,6 +218,7 @@ export function useSubjects(): UseSubjectsReturn {
     subjects,
     loading,
     addSubject,
+    addTopic,
     updateSubject,
     deleteSubject,
     updateTopic,

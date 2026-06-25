@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { supabase } from '../lib/supabase';
 
 export interface AIFeedback {
   c1: number;
@@ -18,61 +18,17 @@ export interface AIFeedback {
 }
 
 export interface UseAIEvaluationReturn {
-  apiKey: string;
-  setApiKey: (key: string) => void;
   isLoading: boolean;
   error: string | null;
   evaluate: (theme: string, content: string) => Promise<AIFeedback | null>;
   clearError: () => void;
 }
 
-const SYSTEM_PROMPT = `Você é um corretor especialista em redações do ENEM, com profundo conhecimento das 5 competências avaliadas pelo INEP. Sua tarefa é avaliar redações dissertativo-argumentativas com rigor e precisão.
-
-As 5 competências e suas pontuações (0, 40, 80, 120, 160 ou 200 pontos cada):
-
-C1 - Domínio da Norma Culta: Avalie ortografia, acentuação, pontuação, concordância, regência e outros aspectos gramaticais.
-C2 - Compreensão da Proposta: Avalie se o texto aborda o tema proposto, desenvolve uma tese clara e usa o tipo textual correto (dissertativo-argumentativo).
-C3 - Seleção de Argumentos: Avalie a qualidade dos argumentos, uso de repertório sociocultural pertinente e a capacidade de defender o ponto de vista.
-C4 - Coesão Textual: Avalie o uso de conectivos, a progressão das ideias, a coerência e a articulação entre os parágrafos.
-C5 - Proposta de Intervenção: Avalie se há uma proposta de intervenção detalhada, viável, relacionada ao tema e que respeite os direitos humanos. Deve ter: agente, ação, modo/meio, efeito/finalidade e detalhamento.
-
-Critérios de pontuação:
-- 0: Não atende ao critério
-- 40: Atende precariamente
-- 80: Atende parcialmente
-- 120: Atende medianamente
-- 160: Atende bem
-- 200: Atende plenamente
-
-Responda APENAS com um JSON válido no seguinte formato, sem markdown, sem texto adicional:
-{
-  "c1": <número>,
-  "c2": <número>,
-  "c3": <número>,
-  "c4": <número>,
-  "c5": <número>,
-  "feedbackGeral": "<parágrafo geral de 2-3 frases sobre a redação>",
-  "feedbackC1": "<feedback específico de 1-2 frases sobre C1>",
-  "feedbackC2": "<feedback específico de 1-2 frases sobre C2>",
-  "feedbackC3": "<feedback específico de 1-2 frases sobre C3>",
-  "feedbackC4": "<feedback específico de 1-2 frases sobre C4>",
-  "feedbackC5": "<feedback específico de 1-2 frases sobre C5>",
-  "pontosFortres": ["<ponto forte 1>", "<ponto forte 2>"],
-  "pontosAMelhorar": ["<ponto a melhorar 1>", "<ponto a melhorar 2>", "<ponto a melhorar 3>"]
-}`;
-
 export function useAIEvaluation(): UseAIEvaluationReturn {
-  const [apiKey, setApiKey] = useLocalStorage<string>('groq-api-key', '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const activeApiKey = apiKey.trim() || (import.meta.env.VITE_GROQ_API_KEY || '').trim();
-
   const evaluate = useCallback(async (theme: string, content: string): Promise<AIFeedback | null> => {
-    if (!activeApiKey) {
-      setError('Configure sua chave da API do Groq nas configurações.');
-      return null;
-    }
     if (!content.trim() || content.trim().split(/\s+/).length < 30) {
       setError('A redação precisa ter pelo menos 30 palavras para ser avaliada.');
       return null;
@@ -81,67 +37,32 @@ export function useAIEvaluation(): UseAIEvaluationReturn {
     setIsLoading(true);
     setError(null);
 
-    const userMessage = `Tema: ${theme || 'Não informado'}
-
-Redação:
-${content}`;
-
     try {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${activeApiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: userMessage },
-          ],
-          temperature: 0.3,
-          max_tokens: 1200,
-        }),
+      const { data, error: fnError } = await supabase.functions.invoke('evaluate-essay', {
+        body: { theme: theme || '', content },
       });
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        if (response.status === 401) throw new Error('Chave de API inválida. Verifique sua chave do Groq.');
-        if (response.status === 429) throw new Error('Limite de requisições atingido no Groq. Aguarde um momento e tente novamente.');
-        throw new Error(err?.error?.message ?? `Erro ${response.status} na API do Groq.`);
+      if (fnError) {
+        // fnError.message contains the error body from the Edge Function
+        const msg = fnError.message || 'Erro ao chamar o serviço de IA.';
+        throw new Error(msg);
       }
 
-      const data = await response.json();
-      const raw = data.choices?.[0]?.message?.content ?? '';
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
-      // Parse JSON — strip any accidental markdown fences
-      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const parsed: AIFeedback = JSON.parse(cleaned);
-
-      // Clamp all scores to valid ENEM values
-      const validSteps = [0, 40, 80, 120, 160, 200];
-      const clamp = (v: number) => validSteps.reduce((prev, curr) =>
-        Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev
-      );
-
-      return {
-        ...parsed,
-        c1: clamp(parsed.c1),
-        c2: clamp(parsed.c2),
-        c3: clamp(parsed.c3),
-        c4: clamp(parsed.c4),
-        c5: clamp(parsed.c5),
-      };
+      return data as AIFeedback;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido ao chamar a IA do Groq.';
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido ao avaliar a redação.';
       setError(msg);
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, [activeApiKey]);
+  }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
-  return { apiKey, setApiKey, isLoading, error, evaluate, clearError };
+  return { isLoading, error, evaluate, clearError };
 }

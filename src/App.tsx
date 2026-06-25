@@ -191,7 +191,7 @@ function DashboardView() {
 }
 
 function MateriasView() {
-  const { subjects, addSubject, updateSubject, deleteSubject } = useSubjectsContext();
+  const { subjects, addSubject, addTopic, updateTopic, deleteSubject, removeTopic } = useSubjectsContext();
   const { showToast } = useToastContext();
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
@@ -204,7 +204,9 @@ function MateriasView() {
     setShowAdd(false);
   };
 
-  const handleUpdateSubject = useCallback((updated: Parameters<typeof updateSubject>[0]) => updateSubject(updated), [updateSubject]);
+  const handleAddTopic = useCallback((subjectId: string, name: string) => addTopic(subjectId, name), [addTopic]);
+  const handleUpdateTopic = useCallback((subjectId: string, topicId: string, patch: Parameters<typeof updateTopic>[2]) => updateTopic(subjectId, topicId, patch), [updateTopic]);
+  const handleRemoveTopic = useCallback((subjectId: string, topicId: string) => removeTopic(subjectId, topicId), [removeTopic]);
   const handleRequestDelete = useCallback((id: string) => setConfirmModal({ isOpen: true, subjectId: id }), []);
   const handleConfirmDelete = useCallback(() => {
     if (confirmModal.subjectId) { deleteSubject(confirmModal.subjectId); showToast('Matéria excluída.', 'info'); }
@@ -238,7 +240,7 @@ function MateriasView() {
       <div className="subjects-grid">
         {subjects.map(subject => (
           <ErrorBoundary key={subject.id}>
-            <SubjectCard subject={subject} onUpdateSubject={handleUpdateSubject} onDeleteSubject={() => handleRequestDelete(subject.id)} />
+            <SubjectCard subject={subject} onAddTopic={(name) => handleAddTopic(subject.id, name)} onUpdateTopic={(topicId, patch) => handleUpdateTopic(subject.id, topicId, patch)} onRemoveTopic={(topicId) => handleRemoveTopic(subject.id, topicId)} onDeleteSubject={() => handleRequestDelete(subject.id)} />
           </ErrorBoundary>
         ))}
         {subjects.length === 0 && (

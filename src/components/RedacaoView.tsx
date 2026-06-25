@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PenLine, Plus, Trash2, ChevronLeft, CheckCircle2, AlertCircle, FileText, Sparkles, Loader2, Key, X, ThumbsUp, AlertTriangle } from 'lucide-react';
+import { PenLine, Plus, Trash2, ChevronLeft, CheckCircle2, AlertCircle, FileText, Sparkles, Loader2, X, ThumbsUp, AlertTriangle } from 'lucide-react';
 import { useRedacoes, type Redacao } from '../hooks/useRedacoes';
 import { useAIEvaluation, type AIFeedback } from '../hooks/useAIEvaluation';
 import { ConfirmModal } from './ConfirmModal';
@@ -206,42 +206,6 @@ function AIFeedbackPanel({ feedback, onApply, onClose }: {
   );
 }
 
-// ─── API Key config ───────────────────────────────────────────────────────────
-function APIKeyConfig({ apiKey, onSave, onClose }: { apiKey: string; onSave: (k: string) => void; onClose: () => void }) {
-  const [value, setValue] = useState(apiKey);
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.97 }}
-      style={{ background: 'rgba(10,15,30,0.97)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Key size={16} color="#e879f9" />
-          <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>Chave da API Groq</span>
-        </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex' }}>
-          <X size={16} />
-        </button>
-      </div>
-      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.5 }}>
-        Sua chave é salva apenas no seu navegador (localStorage) e nunca enviada para nossos servidores. Obtenha em <span style={{ color: '#e879f9' }}>console.groq.com</span>
-      </p>
-      <input
-        type="password"
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        placeholder="gsk-..."
-        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.75rem 1rem', color: '#fff', fontSize: '13px', fontFamily: 'Lexend, sans-serif', outline: 'none', width: '100%', boxSizing: 'border-box' }}
-      />
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button onClick={onClose} style={{ padding: '0.625rem 1.25rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 700, fontFamily: 'Lexend, sans-serif', cursor: 'pointer' }}>Cancelar</button>
-        <button onClick={() => { onSave(value); onClose(); }} style={{ flex: 1, padding: '0.625rem', borderRadius: '10px', border: 'none', background: '#e879f9', color: '#020617', fontSize: '13px', fontWeight: 800, fontFamily: 'Lexend, sans-serif', cursor: 'pointer' }}>Salvar chave</button>
-      </div>
-    </motion.div>
-  );
-}
 interface EditorProps {
   initial?: Redacao | null;
   onSave: (data: Omit<Redacao, 'id' | 'createdAt' | 'updatedAt' | 'totalScore'>) => void;
@@ -254,9 +218,8 @@ function RedacaoEditor({ initial, onSave, onClose }: EditorProps) {
   const [content, setContent] = useState(initial?.content ?? '');
   const [competencias, setCompetencias] = useState(initial?.competencias ?? { c1: 0, c2: 0, c3: 0, c4: 0, c5: 0 });
   const [aiFeedback, setAiFeedback] = useState<AIFeedback | null>(null);
-  const [showKeyConfig, setShowKeyConfig] = useState(false);
 
-  const { apiKey, setApiKey, isLoading, error, evaluate, clearError } = useAIEvaluation();
+  const { isLoading, error, evaluate, clearError } = useAIEvaluation();
 
   const total = competencias.c1 + competencias.c2 + competencias.c3 + competencias.c4 + competencias.c5;
   const words = wordCount(content);
@@ -274,7 +237,6 @@ function RedacaoEditor({ initial, onSave, onClose }: EditorProps) {
   };
 
   const handleAIEvaluate = async () => {
-    if (!apiKey.trim()) { setShowKeyConfig(true); return; }
     const result = await evaluate(theme, content);
     if (result) setAiFeedback(result);
   };
@@ -297,15 +259,6 @@ function RedacaoEditor({ initial, onSave, onClose }: EditorProps) {
         </div>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#fff', margin: 0 }}>{initial ? 'Editar Redação' : 'Nova Redação'}</h2>
       </div>
-
-      {/* API Key config panel */}
-      <AnimatePresence>
-        {showKeyConfig && (
-          <div style={{ marginBottom: '1.5rem' }}>
-            <APIKeyConfig apiKey={apiKey} onSave={setApiKey} onClose={() => setShowKeyConfig(false)} />
-          </div>
-        )}
-      </AnimatePresence>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
         {/* Left: editor */}
@@ -376,11 +329,6 @@ function RedacaoEditor({ initial, onSave, onClose }: EditorProps) {
                 <AlertCircle size={14} color="#f87171" style={{ flexShrink: 0, marginTop: '1px' }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '12px', color: '#f87171', margin: '0 0 4px', fontWeight: 700 }}>{error}</p>
-                  {error.includes('chave') && (
-                    <button onClick={() => { clearError(); setShowKeyConfig(true); }} style={{ fontSize: '11px', color: ACCENT, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'Lexend, sans-serif', fontWeight: 700 }}>
-                      Configurar chave →
-                    </button>
-                  )}
                 </div>
                 <button onClick={clearError} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', display: 'flex', flexShrink: 0 }}><X size={12} /></button>
               </motion.div>

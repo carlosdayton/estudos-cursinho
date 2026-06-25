@@ -8,11 +8,13 @@ import { useToastContext } from '../context/ToastContext';
 
 interface Props {
   subject: Subject;
-  onUpdateSubject: (updated: Subject) => void;
+  onAddTopic: (name: string) => void;
+  onUpdateTopic: (topicId: string, patch: Partial<Topic>) => void;
+  onRemoveTopic: (topicId: string) => void;
   onDeleteSubject: (id: string) => void;
 }
 
-function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
+function SubjectCard({ subject, onAddTopic, onUpdateTopic, onRemoveTopic, onDeleteSubject }: Props) {
   const [newTopicName, setNewTopicName] = useState('');
   const [isExpanded, setIsExpanded] = useState(() => window.innerWidth >= 768);
   const [hoverDelete, setHoverDelete] = useState(false);
@@ -20,32 +22,24 @@ function SubjectCard({ subject, onUpdateSubject, onDeleteSubject }: Props) {
 
   const addTopic = () => {
     if (!newTopicName.trim()) return;
-    const newTopic: Topic = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: newTopicName,
-      isStudied: false,
-      isExercisesDone: false,
-    };
-    onUpdateSubject({ ...subject, topics: [...subject.topics, newTopic] });
+    onAddTopic(newTopicName.trim());
     setNewTopicName('');
   };
 
   const updateTopic = (topicId: string, updates: Partial<Topic>) => {
-    const updatedTopics = subject.topics.map(t => {
-      if (t.id !== topicId) return t;
-      const updated = { ...t, ...updates };
-      if (updated.isStudied && updated.isExercisesDone && (!t.isStudied || !t.isExercisesDone)) {
-        updated.completedAt = new Date().toISOString();
-        updated.reviewDate = calculateReviewDate(updated.completedAt);
-        showToast('Tópico concluído! Revisão agendada.', 'success');
-      }
-      return updated;
-    });
-    onUpdateSubject({ ...subject, topics: updatedTopics });
+    const topic = subject.topics.find(t => t.id === topicId);
+    if (!topic) return;
+    const updated = { ...topic, ...updates };
+    if (updated.isStudied && updated.isExercisesDone && (!topic.isStudied || !topic.isExercisesDone)) {
+      updated.completedAt = new Date().toISOString();
+      updated.reviewDate = calculateReviewDate(updated.completedAt);
+      showToast('Tópico concluído! Revisão agendada.', 'success');
+    }
+    onUpdateTopic(topicId, updated);
   };
 
   const removeTopic = (topicId: string) => {
-    onUpdateSubject({ ...subject, topics: subject.topics.filter(t => t.id !== topicId) });
+    onRemoveTopic(topicId);
   };
 
   const progress = getProgress(subject);
